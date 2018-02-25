@@ -33,6 +33,9 @@
     <node name="controller_spawner" pkg="controller_manager" type="spawner"
           args="$(find roguetwo_gazebo)/config/em_3905_joint_ctrlr_params.yaml"/>
 
+    <!-- Launch gazebo odometry node -->
+    <node name="gazebo_odometry" pkg="roguetwo_gazebo" type="gazebo_odometry.py"/>
+
     <!-- Control the steering, axle, and shock absorber joints. -->
     <node name="ackermann_controller" pkg="roguetwo_gazebo"
           type="ackermann_controller">
@@ -40,4 +43,6 @@
       <rosparam file="$(find roguetwo_gazebo)/config/em_3905_ackermann_ctrlr_params.yaml" command="load"/>
     </node>
   </group>
+
+
 </launch>
