@@ -56,6 +56,12 @@
   <depend>rviz</depend>
   <depend>transmission_interface</depend>
   <depend>xacro</depend>
+  <depend>gazebo_plugins</depend>
+  <depend>gazebo_ros</depend>
+  <depend>roscpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>tf</depend>
+
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

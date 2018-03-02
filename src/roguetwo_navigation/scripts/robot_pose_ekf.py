@@ -49,8 +49,6 @@ def gps_listener():
     rospy.Subscriber("/gps/fix", NavSatFix)
 
 
-
-
 if __name__ == '__main__':
     settings = termios.tcgetattr(sys.stdin)
     pub = rospy.Publisher('/imu_data', Imu)

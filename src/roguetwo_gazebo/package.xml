@@ -60,7 +60,10 @@
   <depend>std_msgs</depend>
   <depend>tf</depend>
   <depend>gps_common</depend>
-
+  <depend>xacro</depend>
+  <depend>gazebo_plugins</depend>
+  <depend>roscpp</depend>
+  <depend>sensor_msgs</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
