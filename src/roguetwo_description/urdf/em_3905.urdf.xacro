@@ -412,13 +412,13 @@ limitations under the License.
   <xacro:property name="height1" value="0.05" />
   <xacro:property name="width" value="0.05" />
 
-  <joint name="fixed" type="fixed">
+<!--   <joint name="fixed" type="fixed">
     <parent link="chassis"/>
     <child link="sensor"/>
   </joint>
-
+ -->
  <!-- Base Link -->
-  <link name="sensor">
+  <!-- <link name="sensor">
     <collision>
       <origin xyz="0 0 ${height1/2}" rpy="0 0 0"/>
       <geometry>
@@ -446,7 +446,7 @@ limitations under the License.
 
   <joint name="stereo_joint" type="fixed">
     <axis xyz="0 1 0" />
-    <origin xyz=".1 .0 0.1" rpy="0 0 0"/>
+    <origin xyz=".10 .0 0.15" rpy="0 0 0"/>
     <parent link="base_link"/>
     <child link="sensor"/>
   </joint>
@@ -503,7 +503,6 @@ limitations under the License.
         <imageTopicName>image_raw</imageTopicName>
         <cameraInfoTopicName>camera_info</cameraInfoTopicName>
         <frameName>left_camera_optical_frame</frameName>
-        <!--<rightFrameName>right_camera_optical_frame</rightFrameName>-->
         <hackBaseline>0.07</hackBaseline>
         <distortionK1>0.0</distortionK1>
         <distortionK2>0.0</distortionK2>
@@ -513,9 +512,9 @@ limitations under the License.
       </plugin>
     </sensor>
   </gazebo>
+ -->
 
-
-<!--   <link name="camera_stereo_left">
+  <link name="camera_stereo_left">
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
@@ -541,7 +540,7 @@ limitations under the License.
 
   <joint name="camera_stereo_left_joint" type="fixed">
     <axis xyz="0 1 0" />
-    <origin xyz=".2 .1 0.1" rpy="0 0 0"/>
+    <origin xyz=".20 .0 0.05" rpy="0 0 0"/>
     <parent link="chassis"/>
     <child link="camera_stereo_left"/>
   </joint>
@@ -579,7 +578,7 @@ limitations under the License.
     </sensor>
   </gazebo>
 
-  <link name="camera_stereo_right">
+<!--   <link name="camera_stereo_right">
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
@@ -707,8 +706,8 @@ limitations under the License.
       </plugin>
     </sensor>
   </gazebo>
-
  -->
+
 <!--   <xacro:property name="height1" value="0.2" />
   <xacro:property name="width" value="0.2" /> -->
 
@@ -836,7 +835,7 @@ limitations under the License.
 
   <joint name="${name1}_joint" type="fixed">
     <axis xyz="0 1 0" />
-    <origin xyz=".25 0 0.15" rpy="0 -0.7 0"/>
+    <origin xyz=".25 0 0.15" rpy="0 -0.55 0"/>
     <parent link="chassis"/>
     <child link="${name1}_link"/>
   </joint>
@@ -901,7 +900,7 @@ limitations under the License.
 
   <joint name="${name2}_joint" type="fixed">
     <axis xyz="0 1 0" />
-    <origin xyz=".0 .25 0.15" rpy="0 -0.60 1.5"/>
+    <origin xyz=".0 .25 0.15" rpy="0 -0.55 1.5"/>
     <parent link="chassis"/>
     <child link="${name2}_link"/>
   </joint>
@@ -967,7 +966,7 @@ limitations under the License.
 
   <joint name="${name3}_joint" type="fixed">
     <axis xyz="0 1 0" />
-     <origin xyz=".0 -.25 0.15" rpy="0 -0.6 -1.5"/>    
+     <origin xyz=".0 -.25 0.15" rpy="0 -0.55 -1.5"/>    
     <parent link="chassis"/>
     <child link="${name3}_link"/>
   </joint>
@@ -1033,7 +1032,7 @@ limitations under the License.
 
   <joint name="${name4}_joint" type="fixed">
     <axis xyz="0 1 0" />
-     <origin xyz="-.25 0 0.15" rpy="0 -0.6 3.0"/>    
+     <origin xyz="-.25 0 0.15" rpy="0 -0.55 3.0"/>    
     <parent link="chassis"/>
     <child link="${name4}_link"/>
   </joint>

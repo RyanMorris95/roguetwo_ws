@@ -3,6 +3,7 @@ import sys, select, termios, tty
 
 import cv2
 import rospy
+import matplotlib.pyplot as plt
 from sensor_msgs.msg import Image, PointCloud2, Imu
 from nav_msgs.msg import Odometry  # for wheel and visual odometry
 from geometry_msgs.msg import PoseWithCovarianceStamped
@@ -15,15 +16,8 @@ class RovioWrapper(object):
     to the ROVIO topis.
     """
     def __init__(self):
-        self.camL_sub = rospy.Subscriber('/stereo/camera/left/image_raw', Image, self.imageL_rectify)
-        self.camR_sub = rospy.Subscriber('/stereo/camera/right/image_raw', Image, self.imageR_rectify)
-        self.imu_sub = rospy.Subscriber('/imu', Imu, self.publish_imu)
-        #self.odometry_sub = rospy.Subscriber('/rovio/odometry', Odometry, )
-        #self.pcl_sub = rospy.Subscriber('/rovio/pcl', PointCloud2, )
-        #self.pose_sub = rospy.Subscriber('/rovio/pose_with_covariance_stamped', PoseWithCovarianceStamped, )
+        self.camL_sub = rospy.Subscriber('/rogue_two/camera_stereo_left/image_raw', Image, self.imageL_rectify)
         self.camL_pub = rospy.Publisher('/cam0/image_raw', Image)
-        self.camR_pub = rospy.Publisher('/cam1/image_raw', Image)
-        self.imu_pub = rospy.Publisher('/imu0', Imu)
         self.bridge = CvBridge()
 
     def imageL_rectify(self, image_l):
