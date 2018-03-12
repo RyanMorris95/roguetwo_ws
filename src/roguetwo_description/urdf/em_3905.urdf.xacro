@@ -578,7 +578,7 @@ limitations under the License.
     </sensor>
   </gazebo>
 
-<!--   <link name="camera_stereo_right">
+  <link name="camera_stereo_right">
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
@@ -604,7 +604,7 @@ limitations under the License.
 
   <joint name="camera_stereo_right_joint" type="fixed">
     <axis xyz="0 1 0" />
-    <origin xyz=".2 -.1 0.1" rpy="0 0 0"/>
+    <origin xyz=".2 -.1 0.05" rpy="0 0 0"/>
     <parent link="chassis"/>
     <child link="camera_stereo_right"/>
   </joint>
@@ -643,7 +643,7 @@ limitations under the License.
   </gazebo>
 
 
-  <link name="camera_steering">
+<!--   <link name="camera_steering">
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>

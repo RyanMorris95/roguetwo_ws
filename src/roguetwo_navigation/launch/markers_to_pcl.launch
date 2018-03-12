@@ -1,0 +1,24 @@
+
+<launch>
+	<!-- ************ Octomap Server **************** -->
+    <node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
+            <param name="resolution" value="0.1" />
+
+            <!-- fixed map frame (set to 'map' if SLAM or localization running!) -->
+            <param name="frame_id" type="string" value="camera_stereo_left" />
+
+            <!-- maximum range to integrate (speedup!) -->
+            <param name="sensor_model/max_range" value="15.0" />
+
+            <!-- Ignore the ground plane -->
+            <param name="filter_ground" value="False" />
+
+            <!-- Min and max height for cell to be included -->
+            <param name="occupancy_min_z" value="2.0" />
+
+
+
+    </node>
+    <!--  ************** Markers to PCL Conversion ***************  -->
+	<node pkg="roguetwo_navigation" type="markers_to_pcl_node" name="markers_to_pcl_node" output="screen"/>
+</launch>
