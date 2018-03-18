@@ -35,7 +35,8 @@
 
 typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
 
-ros::Publisher pub;
+ros::Publisher pcl_pub;
+
 
 void markers_cb(const visualization_msgs::Marker& marker)
 {
@@ -44,6 +45,7 @@ void markers_cb(const visualization_msgs::Marker& marker)
 	PointCloud::Ptr pcl (new PointCloud);
 	for (std::vector<int>::size_type i = 0; i != marker.points.size(); i++)
 	{
+		//pcl::PointXYZ point = pcl::PointXYZ(marker.points[i].x, marker.points[i].y, marker.points[i].z);
 		pcl::PointXYZ point = pcl::PointXYZ(marker.points[i].z, -1*marker.points[i].x, -1*marker.points[i].y);
 		pcl->points.push_back(point);
 	}
@@ -51,10 +53,10 @@ void markers_cb(const visualization_msgs::Marker& marker)
 	//std::cout << pcl << std::endl
 	pcl::toROSMsg(*pcl, pcl_msg);
 	std_msgs::Header pcl_header;
-	pcl_header.frame_id = "camera_stereo_left";
+	pcl_header.frame_id = "world";
 	pcl_msg.header = pcl_header;
 	pcl_msg.is_dense = false;
-	pub.publish(pcl_msg);
+	pcl_pub.publish(pcl_msg);
 }
 
 int main(int argc, char** argv)
@@ -64,7 +66,7 @@ int main(int argc, char** argv)
 
 	ros::Subscriber sub = nh.subscribe("/svo/points", 1, markers_cb);
 
-	pub = nh.advertise<sensor_msgs::PointCloud2>("cloud_in", 1);
+	pcl_pub = nh.advertise<sensor_msgs::PointCloud2>("cloud_in", 1);
 
 	ros::spin();
 }

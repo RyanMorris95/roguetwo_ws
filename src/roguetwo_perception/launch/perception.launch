@@ -1,0 +1,5 @@
+<launch>
+	<node pkg="tf" type="static_transform_publisher" name="world_broadcaster" args="0 0 0 0 0 0 world odom 100" />
+<!-- 	<node pkg="roguetwo_perception" type="sync_perception_hardware_node"
+	name="sync_perception_hardware_node" output="screen" /> -->
+</launch>
