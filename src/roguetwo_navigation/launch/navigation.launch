@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="roguetwo_navigation" type="path_planning_node" name="path_planning" output="screen" />
+</launch>

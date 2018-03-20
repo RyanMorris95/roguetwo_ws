@@ -1,0 +1,5 @@
+<launch>
+    <include>file="$(find roguetwo_gazebo)/roguetwo.launch</launch>
+    <include>file="$(find roguetwo_perception)/perception.launch</launch>
+    <include>file="$(find svo_ros)/mono_from_topic.launch</launch>
+</launch>

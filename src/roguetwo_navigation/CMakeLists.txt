@@ -2,15 +2,16 @@ cmake_minimum_required(VERSION 2.8.3)
 project(roguetwo_navigation)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED roscpp std_msgs genmsg pcl_ros)
+find_package(catkin REQUIRED roscpp std_msgs genmsg pcl_ros message_generation)
+find_package(ompl)
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -43,11 +44,10 @@ find_package(catkin REQUIRED roscpp std_msgs genmsg pcl_ros)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+   FILES
+   Path.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -64,10 +64,10 @@ find_package(catkin REQUIRED roscpp std_msgs genmsg pcl_ros)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages(
+   DEPENDENCIES
+   std_msgs  # Or other packages containing msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -101,7 +101,7 @@ find_package(catkin REQUIRED roscpp std_msgs genmsg pcl_ros)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES roguetwo_navigation
-#  CATKIN_DEPENDS other_catkin_pkg
+  CATKIN_DEPENDS message_runtime
 #  DEPENDS system_lib
 )
 
@@ -111,10 +111,11 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-#include_directories(
-# include
-# ${catkin_INCLUDE_DIRS}
-#)
+include_directories(
+ include
+ ${catkin_INCLUDE_DIRS}
+ ${OMPLE_INCLUDE_DIRS}
+)
 
 ## Declare a C++ library
 #add_library(${PROJECT_NAME}
@@ -126,7 +127,14 @@ catkin_package(
 ## either from message generation or dynamic reconfigure
 # add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-## Declare a C++ executable
+add_executable(path_planning_node src/path_planning.cpp)
+add_dependencies(path_planning_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+
+target_link_libraries(path_planning_node
+   ${catkin_LIBRARIES}
+   ${OMPL_LIBRARIES}
+)
 
 
 ## Specify libraries to link a library or executable target against
