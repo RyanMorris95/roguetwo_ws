@@ -102,7 +102,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES roguetwo_navigation
   CATKIN_DEPENDS message_runtime
-#  DEPENDS system_lib
+  DEPENDS system_lib ompl
 )
 
 ###########
