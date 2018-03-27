@@ -5,6 +5,9 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Pose, Twist, Transform, TransformStamped
 from gazebo_msgs.msg import LinkStates
 from std_msgs.msg import Header
+from roguetwo_perception.msg import SE2
+from tf.transformations import euler_from_quaternion
+
 import numpy as np
 import math
 import tf2_ros
@@ -13,6 +16,7 @@ import tf2_ros
 class OdometryNode(object):
     # set publishers
     pub_odom = rospy.Publisher('/odom', Odometry, queue_size=1)
+    pub_se2 = rospy.Publisher('/se2_state', SE2, queue_size=1)
 
     def __init__(self):
         self.last_received_pose = Pose()
@@ -63,6 +67,19 @@ class OdometryNode(object):
             )
         )
         self.tf_pub.sendTransform(tf)
+
+        orientation = self.last_received_pose.orientation
+        quaternion_arr = np.array([orientation.x,
+                                   orientation.y,
+                                   orientation.z,
+                                   orientation.w])
+        euler = euler_from_quaternion(quaternion_arr)
+
+        se2_msg = SE2()
+        se2_msg.x = self.last_received_pose.position.x
+        se2_msg.y = self.last_received_pose.position.y
+        se2_msg.yaw = euler[1]
+        self.pub_se2.publish(se2_msg)
 
 
 # start the node
