@@ -9,18 +9,24 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <boost/thread/thread.hpp>
 #include <iostream>
+#include <string> 
+#include <sstream>
+#include <boost/lexical_cast.hpp>
 
 image_transport::Publisher camL_pub;
 image_transport::Publisher camR_pub;
 
-cv::VideoCapture camL_stream(0);
-//cv::VideoCapture camR_stream(1);
+cv::VideoCapture camL_stream(1);
+cv::VideoCapture camR_stream(2);
 
 void capture_camL()
 {
-	std::cout << "CAM L thread" << std::endl;
 	cv::Mat camL_frame;
 	camL_stream.read(camL_frame);
+	//ostr_l << left_count;
+	//std::string left_file = "/home/ryan/stereo_images/left/left_" + boost::lexical_cast<std::string>(left_count) + ".png";
+	//cv::imwrite(left_file, camL_frame);
+	//left_count++;
 
 	std_msgs::Header header = std_msgs::Header();
 	header.stamp = ros::Time::now();
@@ -31,10 +37,13 @@ void capture_camL()
 
 void capture_camR()
 {
-	std::cout << "CAM R thread" << std::endl;
 	cv::Mat camR_frame;
-	camL_stream.read(camR_frame);
-	
+	camR_stream.read(camR_frame);
+	//ostr_r << right_count;
+	//std::string right_file = "/home/ryan/stereo_images/right/right_" + boost::lexical_cast<std::string>(right_count) + ".png";
+	//cv::imwrite(right_file, camR_frame);
+	//right_count++;
+
 	std_msgs::Header header = std_msgs::Header();
 	header.stamp = ros::Time::now();
 	header.frame_id = "camera_right_stereo";
@@ -52,11 +61,11 @@ void collect_perception_hardware(const ros::TimerEvent& event)
 {
 	boost::thread thread1(&capture_camL);
 	boost::thread thread2(&capture_camR);
-	boost::thread thread3(&capture_imu);
+	//boost::thread thread3(&capture_imu);
 
 	thread1.join();
 	thread2.join();
-	thread3.join();
+	//thread3.join();
 }
 
 
@@ -65,10 +74,10 @@ int main(int argc, char** argv)
 	ros::init(argc, argv, "sync_perception_hardware");
 	ros::NodeHandle nh;
 	image_transport::ImageTransport it(nh);
-	camL_pub = it.advertise("/sync/image_left", 1);
-	camR_pub = it.advertise("/sync/image_right", 1);
+	camL_pub = it.advertise("/sync/camera_left/image_raw", 1);
+	camR_pub = it.advertise("/sync/camera_right/image_raw", 1);
 
-	ros::Timer timer = nh.createTimer(ros::Duration(0.0333), 
+	ros::Timer timer = nh.createTimer(ros::Duration(0.03333),
 		collect_perception_hardware);
 
 
