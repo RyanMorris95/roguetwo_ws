@@ -38,7 +38,7 @@ bool GlobalPlanner::isStateValid(
 void GlobalPlanner::plan(const ros::TimerEvent& event)
 {
     // construct the state space we are planning in
-    ob::StateSpacePtr space(std::make_shared<ob::ReedsSheppStateSpace>());
+    ob::StateSpacePtr space(boost::make_shared<ob::ReedsSheppStateSpace>());
     //ob::StateSpacePtr space(std::make_shared<ob::SE2StateSpace>());
 
     // set the bounds for the R^2 part of SE(2)
@@ -67,7 +67,7 @@ void GlobalPlanner::plan(const ros::TimerEvent& event)
     // set the start and goal states
     ss.setStartAndGoalStates(start, goal, 0.05);
 
-    ss.setPlanner(ob::PlannerPtr(std::make_shared<og::InformedRRTstar>(ss.getSpaceInformation())));
+    ss.setPlanner(ob::PlannerPtr(boost::make_shared<og::InformedRRTstar>(ss.getSpaceInformation())));
     // ss.getSpaceInformation()->setMinMaxControlDuration(1,100);
     // attempt to solve the problem within one second of planning time
     ob::PlannerStatus solved = ss.solve(0.5);
