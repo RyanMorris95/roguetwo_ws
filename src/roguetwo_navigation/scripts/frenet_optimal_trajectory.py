@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Frenet optimal trajectory generator
 
@@ -8,7 +9,6 @@ Ref:
 - [Optimal trajectory generation for dynamic street scenarios in a Frenet Frame](https://www.youtube.com/watch?v=Cj6tAQe7UCY)
 
 """
-
 import numpy as np
 import matplotlib.pyplot as plt
 import copy
@@ -16,10 +16,11 @@ import math
 import cubic_spline_planner
 
 # Parameter
+ROBOT_RADIUS = 31.0  # robot radius [cm]
 MAX_SPEED = 70  # maximum speed [cm/s]
 MAX_ACCEL = 10.0  # maximum acceleration [cm/ss]
 MAX_CURVATURE = 5.0  # maximum curvature [1/cm]
-MAX_ROAD_WIDTH = 50.0  # maximum road width [cm]
+MAX_ROAD_WIDTH = 91.44+ROBOT_RADIUS  # maximum road width [cm], set to the max length of box + robot radius
 D_ROAD_W = 40.0  # road width sampling length [cm]  # REALLY AFFECTS CONVERGENCE AND SPEED
 DT = 0.2  # time tick [s]
 MAXT = 8.0  # max prediction time [cm]
@@ -27,7 +28,6 @@ MINT = 6.0  # min prediction time [cm]
 TARGET_SPEED = 50  # target speed [cm/s]
 D_T_S = 1.0  # target speed sampling length [m/s]
 N_S_SAMPLE = 1  # sampling number of target speed
-ROBOT_RADIUS = 30.0  # robot radius [m]
 
 # cost weights
 KJ = 0.1
@@ -177,7 +177,7 @@ def calc_frenet_paths(c_speed, c_d, c_d_d, c_d_dd, s0):
             fp.d_dd = [lat_qp.calc_second_derivative(t) for t in fp.t]
             fp.d_ddd = [lat_qp.calc_third_derivative(t) for t in fp.t]
 
-            # Loongitudinal motion planning (Velocity keeping)
+            # Longitudinal motion planning (Velocity keeping)
             for tv in np.arange(TARGET_SPEED - D_T_S * N_S_SAMPLE, TARGET_SPEED + D_T_S * N_S_SAMPLE, D_T_S):
                 tfp = copy.deepcopy(fp)
                 lon_qp = quartic_polynomial(s0, c_speed, 0.0, tv, 0.0, Ti)
@@ -241,7 +241,8 @@ def check_collision(fp, ob):
             d = [((ix - ob[i, 0])**2 + (iy - ob[i, 1])**2)
                  for (ix, iy) in zip(fp.x, fp.y)]
 
-            collision = any([di <= ROBOT_RADIUS**2 for di in d])
+            # 3 feet which is max length of box + robot radius
+            collision = any([di <= ROBOT_RADIUS for di in d])
 
             if collision:
                 return False
@@ -305,7 +306,7 @@ def main():
 
     # way points
     wx = [0.0, 450.0, 900]
-    wy = [0.0, 0.0, 0.0]
+    wy = [0.0, 450.0, 900]
     # obstacle lists
     ob = np.array([[90.0, 10.0],
                    [175.0, 0.0],
@@ -314,6 +315,10 @@ def main():
                    [450.0, -90],
                    [450.0, 90]
                    ])
+
+    ob = np.load("obstacles.npy")
+    ob *= 100
+    print (ob)
 
     tx, ty, tyaw, tc, csp = generate_target_course(wx, wy)
 
@@ -324,7 +329,7 @@ def main():
     c_d_dd = 0.0  # current lateral acceleration [cm/s]
     s0 = 0.0  # current course position
 
-    area = 200.0  # animation area length [cm]
+    area = 500.0  # animation area length [cm]
 
     for i in range(500):
         #start_time = time.time()

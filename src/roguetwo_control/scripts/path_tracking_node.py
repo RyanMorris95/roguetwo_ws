@@ -45,33 +45,37 @@ class PathTrackingNode(object):
     def update_local_path(self, path):
         self.path = path
 
+    def stop_vehicle(self):
+        rospy.signal_shutdown('Made it to goal')
+
     def path_tracking(self, event):
-
         if self.current_se2 and self.path and self.state:
-            cx = [x / 10.0 for x in self.path.x_states]  # convert cm to m
-            cy = [y / 10.0 for y in self.path.y_states]
+            if self.path.x_states[0] == -100:  # shutdown procedure
+                self.stop_vehicle()
+            else:
+                cx = self.path.x_states
+                cy = self.path.y_states
+                self.target_index = pure_pursuit.calc_target_index(self.state, cx, cy)
 
-            self.target_index = pure_pursuit.calc_target_index(self.state, cx, cy)
+                ai = pure_pursuit.PIDControl(self.target_speed, self.state.v)
+                di, self.target_index = pure_pursuit.pure_pursuit_control(self.state,
+                                                                          cx,
+                                                                          cy,
+                                                                          self.target_index)
+                self.state.v = self.state.v + ai * self.dt
 
-            ai = pure_pursuit.PIDControl(self.target_speed, self.state.v)
-            di, self.target_index = pure_pursuit.pure_pursuit_control(self.state,
-                                                                      cx,
-                                                                      cy,
-                                                                      self.target_index)
-            self.state.v = self.state.v + ai * self.dt
+                msg = AckermannDrive()
+                msg.speed = self.state.v
+                msg.acceleration = ai
+                msg.jerk = 1.0
+                msg.steering_angle = di
+                msg.steering_angle_velocity = 1
 
-            msg = AckermannDrive()
-            msg.speed = self.state.v
-            msg.acceleration = ai
-            msg.jerk = 1.0
-            msg.steering_angle = di
-            msg.steering_angle_velocity = 1
-
-            self.pub_ackermann_cmd.publish(msg)
-            print (msg)
+                self.pub_ackermann_cmd.publish(msg)
 
 
 if __name__ == '__main__':
     rospy.init_node("path_tracking_node")
     node = PathTrackingNode()
-    rospy.spin()
+    while not rospy.is_shutdown():
+        pass

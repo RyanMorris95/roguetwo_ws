@@ -12,6 +12,7 @@
 #include <string> 
 #include <sstream>
 #include <boost/lexical_cast.hpp>
+#include <image_transport/subscriber_filter.h>
 
 image_transport::Publisher camL_pub;
 image_transport::Publisher camR_pub;
@@ -51,6 +52,27 @@ void capture_camR()
 	camR_pub.publish(msg);
 }
 
+void capture()
+{
+	cv::Mat camR_frame;
+	camR_stream.read(camR_frame);
+
+	std_msgs::Header header1 = std_msgs::Header();
+	header1.stamp = ros::Time::now();
+	header1.frame_id = "camera_right_stereo";
+	sensor_msgs::ImagePtr msg = cv_bridge::CvImage(header1, "bgr8", camR_frame).toImageMsg();
+	camR_pub.publish(msg);
+
+	cv::Mat camL_frame;
+	camL_stream.read(camL_frame);
+
+	std_msgs::Header header2 = std_msgs::Header();
+	header2.stamp = header1.stamp;
+	header2.frame_id = "camera_left_stereo";
+	msg = cv_bridge::CvImage(header2, "bgr8", camL_frame).toImageMsg();
+	camL_pub.publish(msg);
+}
+
 void capture_imu()
 {
 	std::cout << "IMU thread" << std::endl;
@@ -59,12 +81,13 @@ void capture_imu()
 
 void collect_perception_hardware(const ros::TimerEvent& event)
 {
-	boost::thread thread1(&capture_camL);
-	boost::thread thread2(&capture_camR);
-	//boost::thread thread3(&capture_imu);
+	capture();
+	// boost::thread thread1(&capture_camL);
+	// boost::thread thread2(&capture_camR);
+	// //boost::thread thread3(&capture_imu);
 
-	thread1.join();
-	thread2.join();
+	// thread1.join();
+	// thread2.join();
 	//thread3.join();
 }
 

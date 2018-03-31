@@ -2,27 +2,22 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import numba as nb
 
 show_animation = True
 
-
-class Config():
-    # simulation parameters
-
-    def __init__(self):
-        # robot parameter
-        self.max_speed = 1.0  # [m/s]
-        self.min_speed = -0.5  # [m/s]
-        self.max_yawrate = 40.0 * math.pi / 180.0  # [rad/s]
-        self.max_accel = 0.2  # [m/ss]
-        self.max_dyawrate = 40.0 * math.pi / 180.0  # [rad/ss]
-        self.v_reso = 0.01  # [m/s]
-        self.yawrate_reso = 0.1 * math.pi / 180.0  # [rad/s]
-        self.dt = 0.1  # [s]
-        self.predict_time = 3.0  # [s]
-        self.to_goal_cost_gain = 1.0
-        self.speed_cost_gain = 1.0
-        self.robot_radius = 1.0  # [m]
+max_speed = 0.70  # [m/s]
+min_speed = -0.50  # [m/s]
+max_yawrate = math.radians(45)  # [rad/s]
+max_accel = 0.4  # [m/ss]
+max_dyawrate = math.radians(45)  # [rad/ss]
+v_reso = 0.05  # [m/s]
+yawrate_reso = 0.5 * math.pi / 180.0  # [rad/s]
+dt = 0.1  # [s]
+predict_time = 7.0  # [s]
+to_goal_cost_gain = 1.25  # allows the car to deviate far around boxes
+speed_cost_gain = 1.0
+robot_radius = 0.05  # [m]
 
 
 def motion(x, u, dt):
@@ -37,17 +32,18 @@ def motion(x, u, dt):
     return x
 
 
-def calc_dynamic_window(x, config):
+@nb.jit(nopython=True)
+def calc_dynamic_window(x):
 
     # Dynamic window from robot specification
-    Vs = [config.min_speed, config.max_speed,
-          -config.max_yawrate, config.max_yawrate]
+    Vs = [min_speed, max_speed,
+          -max_yawrate, max_yawrate]
 
     # Dynamic window from motion model
-    Vd = [x[3] - config.max_accel * config.dt,
-          x[3] + config.max_accel * config.dt,
-          x[4] - config.max_dyawrate * config.dt,
-          x[4] + config.max_dyawrate * config.dt]
+    Vd = [x[3] - max_accel * dt,
+          x[3] + max_accel * dt,
+          x[4] - max_dyawrate * dt,
+          x[4] + max_dyawrate * dt]
     #  print(Vs, Vd)
 
     #  [vmin,vmax, yawrate min, yawrate max]
@@ -58,38 +54,39 @@ def calc_dynamic_window(x, config):
     return dw
 
 
-def calc_trajectory(xinit, v, y, config):
+def calc_trajectory(xinit, v, y):
 
     x = np.array(xinit)
     traj = np.array(x)
     time = 0
-    while time <= config.predict_time:
-        x = motion(x, [v, y], config.dt)
+    while time <= predict_time:
+        x = motion(x, [v, y], dt)
         traj = np.vstack((traj, x))
-        time += config.dt
+        time += dt
 
     #  print(len(traj))
     return traj
 
 
-def calc_final_input(x, u, dw, config, goal, ob):
+def calc_final_input(x, u, dw, goal, ob):
 
     xinit = x[:]
     min_cost = 10000.0
     min_u = u
     min_u[0] = 0.0
     best_traj = np.array([x])
+    all_traj = []
 
     # evalucate all trajectory with sampled input in dynamic window
-    for v in np.arange(dw[0], dw[1], config.v_reso):
-        for y in np.arange(dw[2], dw[3], config.yawrate_reso):
-            traj = calc_trajectory(xinit, v, y, config)
-
+    for v in np.arange(dw[0], dw[1], v_reso):
+        for y in np.arange(dw[2], dw[3], yawrate_reso):
+            traj = calc_trajectory(xinit, v, y)
+            all_traj.append(traj)
             # calc cost
-            to_goal_cost = calc_to_goal_cost(traj, goal, config)
-            speed_cost = config.speed_cost_gain * \
-                (config.max_speed - traj[-1, 3])
-            ob_cost = calc_obstacle_cost(traj, ob, config)
+            to_goal_cost = calc_to_goal_cost(traj, goal)
+            speed_cost = speed_cost_gain * \
+                (max_speed - traj[-1, 3])
+            ob_cost = calc_obstacle_cost(traj, ob)
             #  print(ob_cost)
 
             final_cost = to_goal_cost + speed_cost + ob_cost
@@ -103,14 +100,14 @@ def calc_final_input(x, u, dw, config, goal, ob):
     #  print(min_u)
     #  input()
 
-    return min_u, best_traj
+    return min_u, best_traj, all_traj
 
 
-def calc_obstacle_cost(traj, ob, config):
-    # calc obstacle cost inf: collistion, 0:free
-
+@nb.jit(nopython=True, parallel=True)
+def calc_obstacle_cost(traj, ob):
+    # calc obstacle cost inf: collision, 0:free
     skip_n = 2
-    minr = float("inf")
+    minr = float(1e33)
 
     for ii in range(0, len(traj[:, 1]), skip_n):
         for i in range(len(ob[:, 0])):
@@ -120,8 +117,8 @@ def calc_obstacle_cost(traj, ob, config):
             dy = traj[ii, 1] - oy
 
             r = math.sqrt(dx**2 + dy**2)
-            if r <= config.robot_radius:
-                return float("Inf")  # collisiton
+            if r <= 0.31:
+                return float(1e33)  # collision
 
             if minr >= r:
                 minr = r
@@ -129,29 +126,28 @@ def calc_obstacle_cost(traj, ob, config):
     return 1.0 / minr  # OK
 
 
-def calc_to_goal_cost(traj, goal, config):
+@nb.jit(nopython=True)
+def calc_to_goal_cost(traj, goal):
     # calc to goal cost. It is 2D norm.
 
     dy = goal[0] - traj[-1, 0]
     dx = goal[1] - traj[-1, 1]
     goal_dis = math.sqrt(dx**2 + dy**2)
-    cost = config.to_goal_cost_gain * goal_dis
+    cost = to_goal_cost_gain * goal_dis
 
     return cost
 
 
-def dwa_control(x, u, config, goal, ob):
+def dwa_control(x, u, goal, ob):
     # Dynamic Window control
 
     start_time = time.time()
-    dw = calc_dynamic_window(x, config)
-    print ('Dynamic Window Time: ' + str(time.time() - start_time))
+    dw = calc_dynamic_window(x)
 
     start_time = time.time()
-    u, traj = calc_final_input(x, u, dw, config, goal, ob)
-    print ('Final Input Time: ' + str(time.time() - start_time))
+    u, traj, all_traj = calc_final_input(x, u, dw, goal, ob)
 
-    return u, traj
+    return u, traj, all_traj
 
 
 def plot_arrow(x, y, yaw, length=0.5, width=0.1):
@@ -163,47 +159,41 @@ def plot_arrow(x, y, yaw, length=0.5, width=0.1):
 def main():
     print(__file__ + " start!!")
     # initial state [x(m), y(m), yaw(rad), v(m/s), omega(rad/s)]
-    x = np.array([0.0, 0.0, math.pi / 8.0, 0.0, 0.0])
+    x = np.array([0.0, 0.0, math.radians(0), 0.0, 0.0])
     # goal position [x(m), y(m)]
-    goal = np.array([10, 10])
-    # obstacles [x(m) y(m), ....]
-    ob = np.matrix([[-1, -1],
-                    [0, 2],
-                    [4.0, 2.0],
-                    [5.0, 4.0],
-                    [5.0, 5.0],
-                    [5.0, 6.0],
-                    [5.0, 9.0],
-                    [8.0, 9.0],
-                    [7.0, 9.0],
-                    [12.0, 12.0]
-                    ])
+    goal = np.array([12, 0])
+
+    ob = np.load('obstacles.npy')
+
+    # fig = plt.show()
+    # plt.plot(ob[:, 0], ob[:, 1], "ok")
+    # plt.show()
 
     u = np.array([0.0, 0.0])
-    config = Config()
     traj = np.array(x)
 
     for i in range(1000):
-        start_time = time.time()
-        u, ltraj = dwa_control(x, u, config, goal, ob)
-        end_time = time.time()
-        print('Total Time: ' + str(end_time - start_time))
-        x = motion(x, u, config.dt)
+        u, ltraj, all_traj = dwa_control(x, u, goal, ob)
+        x = motion(x, u, dt)
         traj = np.vstack((traj, x))  # store state history
 
         if show_animation:
             plt.cla()
+            for traj in all_traj:
+                plt.plot(traj[:, 0], traj[:, 1], "-r")
             plt.plot(ltraj[:, 0], ltraj[:, 1], "-g")
             plt.plot(x[0], x[1], "xr")
             plt.plot(goal[0], goal[1], "xb")
             plt.plot(ob[:, 0], ob[:, 1], "ok")
             plot_arrow(x[0], x[1], x[2])
             plt.axis("equal")
+            plt.xlim(-1, goal[0] + 1)
+            plt.ylim(-1, goal[1] + 1)
             plt.grid(True)
             plt.pause(0.0001)
 
         # check goal
-        if math.sqrt((x[0] - goal[0])**2 + (x[1] - goal[1])**2) <= config.robot_radius:
+        if math.sqrt((x[0] - goal[0])**2 + (x[1] - goal[1])**2) <= robot_radius:
             print("Goal!!")
             break
 

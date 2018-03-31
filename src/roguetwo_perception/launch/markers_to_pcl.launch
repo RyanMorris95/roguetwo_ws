@@ -2,7 +2,7 @@
 <launch>
 	<!-- ************ Octomap Server **************** -->
     <node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
-            <param name="resolution" value="0.05" />
+            <param name="resolution" value="0.2" />
 
             <!-- fixed map frame (set to 'map' if SLAM or localization running!) -->
             <param name="frame_id" type="string" value="world" />
@@ -14,7 +14,9 @@
             <param name="filter_ground" value="False" />
 
             <!-- Min and max height for cell to be included -->
-            <param name="pointcloud_min_z" value="0.2" />
+            <param name="pointcloud_min_z" value="0.35" />
+            <param name="pointcloud_max_z" value="1.0" />
+
 
 
     </node> 

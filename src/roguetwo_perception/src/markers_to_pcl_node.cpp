@@ -45,7 +45,6 @@ void markers_cb(const visualization_msgs::Marker& marker)
 	PointCloud::Ptr pcl (new PointCloud);
 	for (std::vector<int>::size_type i = 0; i != marker.points.size(); i++)
 	{
-		//pcl::PointXYZ point = pcl::PointXYZ(marker.points[i].x, marker.points[i].y, marker.points[i].z);
 		pcl::PointXYZ point = pcl::PointXYZ(marker.points[i].z, -1*marker.points[i].x, -1*marker.points[i].y);
 		pcl->points.push_back(point);
 	}
