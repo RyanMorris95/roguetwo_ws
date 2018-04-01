@@ -856,7 +856,7 @@ limitations under the License.
             </horizontal>
             <vertical>
               <samples>${ray_count}</samples>
-              <resolution>1</resolution>
+              <resolution>0</resolution>
               <min_angle>-${field_of_view/2}</min_angle>
               <max_angle> ${field_of_view/2}</max_angle>
             </vertical>

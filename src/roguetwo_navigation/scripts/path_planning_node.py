@@ -46,7 +46,7 @@ class PathPlanningNode(object):
 
         # Dynamic Window Planning Variables
         self.state = [0.0, 0.0, 0.0, 0.0, 0.0]  # [x(m), y(m), yaw(rad), v(m/s), omega(rad/s)]
-        self.goal = [0, 0]
+        self.goal = [10, 0]
         self.u = np.array([0.0, 0.0])
         self.traj = np.array(self.state)
         self.dt = 0.1
@@ -60,7 +60,7 @@ class PathPlanningNode(object):
         # ran
 
     def start_autonomous(self, start):
-        self.goal = [0, 0]
+        self.goal = [10, 0]
         self.generate_dynamic_window_global_path(self.goal)
 
     def update_obstacles(self, occupancy_grid_msg):

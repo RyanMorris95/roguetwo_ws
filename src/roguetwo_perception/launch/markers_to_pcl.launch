@@ -21,9 +21,9 @@
 
     </node> 
 
+    <remap from="svo/pointcloud" to="cloud_in" /> 
 
     <node pkg="tf" type="static_transform_publisher" name="world_broadcaster" args="0 0 0 0 0 0 world odom 100" />
 
-    <!--  ************** Markers to PCL Conversion ***************  -->
-	<node pkg="roguetwo_perception" type="markers_to_pcl_node" name="markers_to_pcl_node" output="screen"/>
+
 </launch>
