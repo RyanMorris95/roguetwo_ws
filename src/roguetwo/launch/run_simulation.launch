@@ -1,5 +1,7 @@
 <launch>
-    <include>file="$(find roguetwo_gazebo)/roguetwo.launch</launch>
-    <include>file="$(find roguetwo_perception)/perception.launch</launch>
-    <include>file="$(find svo_ros)/mono_from_topic.launch</launch>
+    <include file="$(find roguetwo_gazebo)/launch/roguetwo.launch" />
+    <include file="$(find roguetwo_perception)/launch/perception.launch" />
+    <include file="$(find svo_ros)/launch/mono_from_topic.launch" />
+    <include file="$(find roguetwo_navigation)/launch/navigation.launch" />
+    <include file="$(find roguetwo_control)/launch/control.launch" />
 </launch>

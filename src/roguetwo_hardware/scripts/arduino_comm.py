@@ -8,14 +8,14 @@ from sklearn import preprocessing
 from ackermann_msgs.msg import AckermannDrive
 
 
-class ArduinoPWMComm(object):
+class ArduinoComm(object):
 	def __init__(self):
 		rospy.Subscriber('/ackermann_cmd', AckermannDrive, self.send_pwm, queue_size=1)
 		#self.ser = serial.Serial('/dev/ttyUSB0', 9600)
 		self.min_pwm_steering = 90
 		self.max_pwm_steering = 180
 		self.min_pwm_motor = 0
-		self.max_pwm_motor = 255
+		self.max_pwm_motor = 80
 
 		self.min_speed = -0.5
 		self.max_speed = 0.5
@@ -40,12 +40,11 @@ class ArduinoPWMComm(object):
 		steering_pwm = self.convert_steering_to_pwm(steering_angle)
 
 		pwm_message = str(speed_pwm) + " " + str(steering_pwm)
-		print (pwm_message)
 
-		#self.ser.write(pwm_message)
+		self.ser.write(pwm_message)
 
 
 if __name__ == "__main__":
-    rospy.init_node("arduino_pwm_comm")
-    node = ArduinoPWMComm()
+    rospy.init_node("arduino_comm")
+    node = ArduinoComm()
     rospy.spin()
