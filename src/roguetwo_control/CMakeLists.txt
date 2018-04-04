@@ -8,7 +8,6 @@ project(roguetwo_control)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED roscpp std_msgs genmsg pcl_ros message_generation ackermann_msgs)
-find_package(ompl)
 
 
 ## System dependencies are found with CMake's conventions
@@ -104,7 +103,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES roguetwo_navigation
   CATKIN_DEPENDS message_runtime
-  DEPENDS system_lib ompl
+  DEPENDS system_lib
 )
 
 ###########
@@ -116,7 +115,6 @@ catkin_package(
 include_directories(
  include
  ${catkin_INCLUDE_DIRS}
- ${OMPLE_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -150,7 +148,6 @@ include_directories(
 ## Specify libraries to link a library or executable target against
 #target_link_libraries(follow_trajectory_node
 #   ${catkin_LIBRARIES}
-#   ${OMPL_LIBRARIES}
 #)
 
 #############

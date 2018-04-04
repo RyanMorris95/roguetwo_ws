@@ -8,7 +8,6 @@ add_compile_options(-std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED roscpp std_msgs genmsg pcl_ros message_generation)
-find_package(ompl)
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
@@ -102,7 +101,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES roguetwo_navigation
   CATKIN_DEPENDS message_runtime
-  DEPENDS system_lib ompl
+  DEPENDS system_lib
 )
 
 ###########
@@ -114,7 +113,6 @@ catkin_package(
 include_directories(
  include
  ${catkin_INCLUDE_DIRS}
- ${OMPLE_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -134,7 +132,6 @@ add_dependencies(path_planning_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin
 
 target_link_libraries(path_planning_node
    ${catkin_LIBRARIES}
-   ${OMPL_LIBRARIES}
 )
 
 

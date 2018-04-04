@@ -58,25 +58,25 @@ void capture()
 	cv::Mat camR_frame;
 	cv::Mat camR_frame_gray;
 	camR_stream.read(camR_frame);
-	//cv::cvtColor(camR_frame, camR_frame_gray, cv::COLOR_BGR2GRAY);
+	cv::cvtColor(camR_frame, camR_frame_gray, cv::COLOR_BGR2GRAY);
 
 	std_msgs::Header header1 = std_msgs::Header();
 	header1.stamp = ros::Time::now();
 	header1.frame_id = "camera_right_stereo";
-	//sensor_msgs::ImagePtr msg = cv_bridge::CvImage(header1, "mono8", camR_frame_gray).toImageMsg();
-	sensor_msgs::ImagePtr msg = cv_bridge::CvImage(header1, "bgr8", camR_frame).toImageMsg();
+	sensor_msgs::ImagePtr msg = cv_bridge::CvImage(header1, "mono8", camR_frame_gray).toImageMsg();
+	//sensor_msgs::ImagePtr msg = cv_bridge::CvImage(header1, "bgr8", camR_frame).toImageMsg();
 	camR_pub.publish(msg);
 
 	cv::Mat camL_frame;
 	cv::Mat camL_frame_gray;
 	camL_stream.read(camL_frame);
-	//cv::cvtColor(camL_frame, camL_frame_gray, cv::COLOR_BGR2GRAY);
+	cv::cvtColor(camL_frame, camL_frame_gray, cv::COLOR_BGR2GRAY);
 
 	std_msgs::Header header2 = std_msgs::Header();
 	header2.stamp = header1.stamp;
 	header2.frame_id = "camera_left_stereo";
-	//msg = cv_bridge::CvImage(header2, "mono8", camL_frame_gray).toImageMsg();
-	msg = cv_bridge::CvImage(header2, "bgr8", camL_frame).toImageMsg();
+	msg = cv_bridge::CvImage(header2, "mono8", camL_frame_gray).toImageMsg();
+	//msg = cv_bridge::CvImage(header2, "bgr8", camL_frame).toImageMsg();
 
 	camL_pub.publish(msg);
 }

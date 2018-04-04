@@ -1,0 +1,26 @@
+label: "PS3Eye"
+cameras:
+- camera:
+    label: cam0
+    line-delay-nanoseconds: 0
+    image_height: 480
+    image_width: 640
+    type: pinhole
+    intrinsics:
+      cols: 1
+      rows: 4
+      data: [525.6173676595406, 525.6183780765399, 340.9093020721165, 255.46898552048717]
+    distortion:
+      type: radial-tangential
+      parameters:
+        cols: 1
+        rows: 4
+        data: [-0.07616983815394561, 0.10265085592942326, 0.011607702823387219,
+    0.012889569647631079]
+  T_B_C:
+    cols: 4
+    rows: 4
+    data: [ 1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0]
