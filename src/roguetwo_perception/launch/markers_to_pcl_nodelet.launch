@@ -26,5 +26,9 @@
     </node> 
 
      <!--  ************** Markers to PCL Conversion ***************  -->
-   <node pkg="roguetwo_perception" type="markers_to_pcl_node" name="markers_to_pcl_node" output="screen"/>
+   <node pkg="roguetwo_perception" type="markers_to_pcl_node" name="markers_to_pcl_node" output="screen">
+        <!-- set use_imu flag. This changes the frame that SVO publishes in -->
+        <param name="use_imu" type="bool" value="true" />
+   
+   </node>
 </launch>

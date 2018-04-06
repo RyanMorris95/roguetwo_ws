@@ -29,6 +29,7 @@ class PathTrackingNode(object):
         self.current_se2 = None
         self.path = None
         self.dt = 0.1
+        self.max_steering_angle = 0.25
 
         self.path_tracking_timer = rospy.Timer(rospy.Duration(self.dt), self.path_tracking)
 
@@ -46,6 +47,13 @@ class PathTrackingNode(object):
         self.path = path
 
     def stop_vehicle(self):
+        msg = AckermannDrive()
+        msg.speed = 0
+        msg.acceleration = 0
+        msg.jerk = 0
+        msg.steering_angle = 0
+        msg.steering_angle_velocity = 0
+        self.pub_ackermann_cmd.publish(msg)
         rospy.signal_shutdown('Made it to goal')
 
     def path_tracking(self, event):
@@ -55,23 +63,26 @@ class PathTrackingNode(object):
             else:
                 cx = self.path.x_states
                 cy = self.path.y_states
-                self.target_index = pure_pursuit.calc_target_index(self.state, cx, cy)
+                self.target_index = pure_pursuit.calculate_target_index(self.state, cx, cy)
 
-                ai = pure_pursuit.PIDControl(self.target_speed, self.state.v)
+                ai = pure_pursuit.pid_control(self.target_speed, self.state.v)
                 di, self.target_index = pure_pursuit.pure_pursuit_control(self.state,
                                                                           cx,
                                                                           cy,
                                                                           self.target_index)
                 self.state.v = self.state.v + ai * self.dt
+                if di > self.max_steering_angle:
+                    di = self.max_steering_angle
 
                 msg = AckermannDrive()
                 msg.speed = self.state.v
-                msg.acceleration = ai
+                msg.acceleration = 0.5
                 msg.jerk = 1.0
                 msg.steering_angle = di
                 msg.steering_angle_velocity = 1
 
                 self.pub_ackermann_cmd.publish(msg)
+                print (msg)
 
 
 if __name__ == '__main__':

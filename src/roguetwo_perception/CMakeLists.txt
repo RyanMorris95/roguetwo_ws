@@ -152,6 +152,9 @@ add_dependencies(sync_perception_hardware_node ${${PROJECT_NAME}_EXPORTED_TARGET
 add_executable(markers_to_pcl_node src/markers_to_pcl_node.cpp)
 add_dependencies(markers_to_pcl_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+add_executable(velocity_estimation_node src/velocity_estimation_node.cpp)
+add_dependencies(velocity_estimation_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -163,6 +166,10 @@ target_link_libraries(sync_perception_hardware_node
 )
 
 target_link_libraries(markers_to_pcl_node
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(velocity_estimation_node
    ${catkin_LIBRARIES}
 )
 

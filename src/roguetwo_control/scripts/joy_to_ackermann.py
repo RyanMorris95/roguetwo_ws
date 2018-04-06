@@ -43,7 +43,7 @@ class JoyToAckermann(object):
 		if buttons[2] == 1:  # button x clicked
 			motor_velocity = 0
 			steering_angle = 0
-
+			
 		else:
 			steering_axis = axes[0]
 			reverse_trigger = axes[2]
@@ -59,16 +59,16 @@ class JoyToAckermann(object):
 				motor_velocity = abs(gas_trigger * self.max_motor_vel)
 			steering_angle = steering_axis * self.max_steering_angle
 
-			msg = AckermannDrive()
-			msg.speed = motor_velocity
-			msg.acceleration = 1
-			msg.jerk = 1
-			msg.steering_angle = steering_angle
-			msg.steering_angle_velocity = 1
-			self.current_cmd_msg = msg
-			print (self.current_cmd_msg)
-			#self.pub_ackermann.publish(msg)
-			#print (msg)
+		msg = AckermannDrive()
+		msg.speed = motor_velocity
+		msg.acceleration = 1
+		msg.jerk = 1
+		msg.steering_angle = steering_angle
+		msg.steering_angle_velocity = 1
+		self.current_cmd_msg = msg
+		print (self.current_cmd_msg)
+		#self.pub_ackermann.publish(msg)
+		#print (msg)
 
 
 if __name__ == "__main__":

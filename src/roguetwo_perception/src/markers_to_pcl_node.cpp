@@ -36,7 +36,7 @@
 typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
 
 ros::Publisher pcl_pub;
-
+bool use_imu;
 
 void markers_cb(const visualization_msgs::Marker& marker)
 {
@@ -45,7 +45,12 @@ void markers_cb(const visualization_msgs::Marker& marker)
 	PointCloud::Ptr pcl (new PointCloud);
 	for (std::vector<int>::size_type i = 0; i != marker.points.size(); i++)
 	{
-		pcl::PointXYZ point = pcl::PointXYZ(marker.points[i].z, -1*marker.points[i].x, -1*marker.points[i].y);
+		pcl::PointXYZ point;
+		if (use_imu)
+			point = pcl::PointXYZ(marker.points[i].x, marker.points[i].y, marker.points[i].z);
+		else
+			point = pcl::PointXYZ(marker.points[i].z, -1*marker.points[i].x, -1*marker.points[i].y);
+		
 		pcl->points.push_back(point);
 	}
 	//pcl.sensor_origin_ = 
@@ -62,6 +67,7 @@ int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "markers_to_pcl");
 	ros::NodeHandle nh;
+	nh.getParam("use_imu", use_imu);
 
 	ros::Subscriber sub = nh.subscribe("/svo/points", 1, markers_cb);
 

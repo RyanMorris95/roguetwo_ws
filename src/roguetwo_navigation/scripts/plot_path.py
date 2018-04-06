@@ -25,8 +25,7 @@ class PlotPath(object):
         y_states = path.y_states
         yaw_states = path.yaw_states
 
-        plt.scatter(x_states, y_states, c='red')
-        plt.plot(x_states, y_states, c='red')
+        plt.scatter(x_states[0:-1:2], y_states[0:-1:2], c='red')
         #self.plot_arrow(x[0], x[1], x[2])
 
         plt.xlim(-5, 15)

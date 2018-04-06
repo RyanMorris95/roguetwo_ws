@@ -23,7 +23,13 @@ DynamicWindowPlanner::DynamicWindowPlanner()
     robot_radius = 0.31;
 }
 
-
+// Finds the next state of the robot based on the control inputs.
+// Only used for simulations.
+//
+// @param robot_state: current SE2 state of the robot
+// @param controls: speed and steering angle control input
+// @param delta_time: how long to apply these controls
+// @return robot_state: the new robot state 
 RobotState DynamicWindowPlanner::motion(
     RobotState robot_state,
     Controls controls,
@@ -38,13 +44,11 @@ RobotState DynamicWindowPlanner::motion(
     return robot_state;
 }
 
-/**
-    Calculates the dynamic window using the robot footprint
-    and current motion states.
-
-    @param robot_state: current motion state of the robot
-    @return: dynamic window
-*/
+//  Calculates the dynamic window using the robot footprint
+//  and current motion states.
+//
+//  @param robot_state: current motion state of the robot
+//  @return: dynamic window
 DynamicWindow DynamicWindowPlanner::calculate_dynamic_window(RobotState robot_state)
 {
     DynamicWindow dynamic_window_robot;
@@ -52,22 +56,12 @@ DynamicWindow DynamicWindowPlanner::calculate_dynamic_window(RobotState robot_st
     dynamic_window_robot.y_max = max_speed;
     dynamic_window_robot.yaw_rate_min = -1*max_yaw_rate;
     dynamic_window_robot.yaw_rate_max = max_yaw_rate;
-    // std::cout << "dynamic window robot" << std::endl;
-    // std::cout << "Y_min: " << dynamic_window_robot.y_min 
-    // << " Y_max: " << dynamic_window_robot.y_max 
-    // << " yaw_rate_min: " << dynamic_window_robot.yaw_rate_min
-    // << " Y_max: " << dynamic_window_robot.yaw_rate_max << std::endl;
 
     DynamicWindow dynamic_window_motion;
     dynamic_window_motion.y_min = robot_state.velocity - max_acceleration * delta_time;
     dynamic_window_motion.y_max = robot_state.velocity + max_acceleration * delta_time;
     dynamic_window_motion.yaw_rate_min = robot_state.yaw_rate - max_yaw_acceleration * delta_time;
     dynamic_window_motion.yaw_rate_max = robot_state.yaw_rate + max_yaw_acceleration * delta_time;
-    // std::cout << "dynamic window motion" << std::endl;
-    // std::cout << "Y_min: " << dynamic_window_motion.y_min 
-    // << " Y_max: " << dynamic_window_motion.y_max 
-    // << " yaw_rate_min: " << dynamic_window_motion.yaw_rate_min
-    // << " Y_max: " << dynamic_window_motion.yaw_rate_max << std::endl;
 
     // the final dynamic window is the minimum of the robot and motion windows
     DynamicWindow dynamic_window_final;
@@ -79,14 +73,13 @@ DynamicWindow DynamicWindowPlanner::calculate_dynamic_window(RobotState robot_st
     return dynamic_window_final;
 }
 
-/**
-    Calculates the trajectory for the robot to follow. 
 
-    @param robot_state: current motion state of the robot
-    @param velocity:  control input velocity
-    @param yaw_rate: control input yaw rate
-    @return: vector of motion states which is the trajectory
-*/
+//  Calculates the trajectory for the robot to follow. 
+//
+//  @param robot_state: current motion state of the robot
+//  @param velocity:  control input velocity
+//  @param yaw_rate: control input yaw rate
+//  @return: vector of motion states which is the trajectory
 std::vector<RobotState> DynamicWindowPlanner::calculate_trajectory(
         RobotState robot_state,
         double velocity,
@@ -135,21 +128,13 @@ std::vector<RobotState> DynamicWindowPlanner::calculate_final_input(
             std::vector<RobotState> trajectory = calculate_trajectory(robot_state, 
                                                                         v, 
                                                                         y);
-            // print_trajectory(trajectory);
-
             double to_goal_cost = calculate_to_goal_cost(trajectory, goal);
 
-            //std::cout << "Goal Cost: " << to_goal_cost << std::endl;
-
             double speed_cost = speed_cost_gain * (max_speed - trajectory[-1].velocity);
-            //std::cout << "Speed Cost: " << speed_cost << std::endl;
 
             obstacle_cost = calculate_obstacle_cost(trajectory, obstacles);
-            //std::cout << "obstacle Cost: " << obstacle_cost << std::endl;
 
             double final_cost = to_goal_cost + speed_cost + obstacle_cost;
-
-            //std::cout << "Final Cost: " << final_cost << std::endl;
 
             // search for minimum trajectory
             if (min_cost >= final_cost)

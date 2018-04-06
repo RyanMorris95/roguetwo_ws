@@ -65,35 +65,19 @@ void PathPlanningNode::generate_dynamic_window_path(const ros::TimerEvent& event
 	obstacle.y = -0.25;
 	obstacles.push_back(obstacle);
 
-	// std::cout << "Planning trajectory" << std::endl;
 	trajectory = dynamic_window_planner.plan(
 		robot_state, 
 		controls, 
 		goal, 
 		obstacles);
 
-	// std::cout << "Found trajectory" << std::endl;
-	// std::cout << "Goal: " << goal.x << " " << goal.y << std::endl;
-	// std::cout << "Robot State: " << robot_state.x << " " << robot_state.y << std::endl;
-
 	double distance_from_goal = sqrt(pow((robot_state.x - goal.x), 2) +
 										pow((robot_state.y - goal.y), 2));
 
 	std::cout << "distance_from_goal: " << distance_from_goal << std::endl;
-	// std::cout << "best controls: " << dynamic_window_planner.best_controls_.velocity << "\t" 
-	//  << dynamic_window_planner.best_controls_.yaw_rate << "\t" << std::endl;
-
-	 // std::cout << "Robot State: " << robot_state.x << " " << robot_state.y 
-	 // 	<< " " << robot_state.yaw << " " << robot_state.velocity 
-	 // 	<< " " << robot_state.yaw_rate << std::endl;
 
 	robot_state = dynamic_window_planner.motion(robot_state, dynamic_window_planner.best_controls_, delta_time);
 
-	//  std::cout << "Robot State: " << robot_state.x << " " << robot_state.y 
-	//  	<< " " << robot_state.yaw << " " << robot_state.velocity 
-	//  	<< " " << robot_state.yaw_rate << std::endl;
-
-	// dynamic_window_planner.print_trajectory(trajectory);
 	robot_state.x = se2.x;
 	robot_state.y = se2.y;
 	robot_state.yaw = se2.yaw;

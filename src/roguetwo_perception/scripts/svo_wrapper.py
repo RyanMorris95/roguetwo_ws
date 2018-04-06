@@ -26,9 +26,11 @@ class SVOWrapper(object):
     pub_odom = rospy.Publisher('/cam_pose', PoseStamped, queue_size=1)
     pub_se2 = rospy.Publisher('/se2_state', SE2, queue_size=1)
 
-    def __init__(self):
+    def __init__(self, use_imu):
         # set subscribers
         rospy.Subscriber('/svo/pose_cam/0', PoseStamped, self.svo_pose_callback)
+
+        self.use_imu = use_imu
 
     def svo_pose_callback(self, svo_pose):
         # convert position to standard ROS XYZ
@@ -36,9 +38,11 @@ class SVOWrapper(object):
         pose = svo_pose.pose
         position = pose.position
         orientation = pose.orientation
-        ros_format_pose.pose.position.x = position.z
-        ros_format_pose.pose.position.y = -position.x
-        ros_format_pose.pose.position.z = -position.y
+
+        if not use_imu:
+            ros_format_pose.pose.position.x = position.z
+            ros_format_pose.pose.position.y = -position.x
+            ros_format_pose.pose.position.z = -position.y
         orientation = svo_pose.pose.orientation
         ros_format_pose.pose.orientation = orientation
         
@@ -67,5 +71,6 @@ class SVOWrapper(object):
 # start the node
 if __name__ == '__main__':
     rospy.init_node("svo_wrapper")
-    node = SVOWrapper()
+    use_imu = rospy.get_param("~use_imu")
+    node = SVOWrapper(use_imu)
     rospy.spin()
