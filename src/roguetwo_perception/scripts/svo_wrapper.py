@@ -8,7 +8,6 @@ import PyKDL
 
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseStamped, Twist, Transform, TransformStamped
-from gazebo_msgs.msg import LinkStates
 from std_msgs.msg import Header, Float64MultiArray
 from tf.transformations import euler_from_quaternion
 from roguetwo_perception.msg import SE2
@@ -27,12 +26,11 @@ class SVOWrapper(object):
     pub_odom = rospy.Publisher('/cam_pose', PoseStamped, queue_size=1)
     pub_se2 = rospy.Publisher('/se2_state', SE2, queue_size=1)
 
-    def __init__(self, use_imu):
+    def __init__(self):
         # set subscribers
         rospy.Subscriber('/svo/pose_cam/0', PoseStamped, self.svo_pose_callback)
 
         self.initial_rotation = None
-        self.use_imu = use_imu
 
     def svo_pose_callback(self, svo_pose):
         # convert position to standard ROS XYZ
@@ -92,6 +90,5 @@ class SVOWrapper(object):
 # start the node
 if __name__ == '__main__':
     rospy.init_node("svo_wrapper")
-    use_imu = rospy.get_param("~use_imu")
-    node = SVOWrapper(use_imu)
+    node = SVOWrapper()
     rospy.spin()

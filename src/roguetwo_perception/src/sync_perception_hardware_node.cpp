@@ -18,7 +18,7 @@
 image_transport::Publisher camL_pub;
 // image_transport::Publisher camR_pub;
 
-cv::VideoCapture camL_stream(1);
+cv::VideoCapture camL_stream(0);
 // cv::VideoCapture camR_stream(2);
 
 // void capture_camL()

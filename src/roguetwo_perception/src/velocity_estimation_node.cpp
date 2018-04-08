@@ -61,7 +61,6 @@ void VelocityEstimationNode::naive_velocity_estimation(const ros::TimerEvent& ev
 {
 	float x_delta = this->current_se2.x - this->previous_se2.x;
 	
-	std::cout << "X Delta: " << x_delta << std::endl;
 	if (x_delta > 0.001 || x_delta < -0.001)
 	{
 		// find velocity in the robot's coordinate frame a.k.a speed
