@@ -80,7 +80,7 @@ void VelocityEstimationNode::naive_velocity_estimation(const ros::TimerEvent& ev
 
 int main(int argc, char** argv)
 {
-	ros::init(argc, argv, "velocity_estimation");
+	ros::init(argc, argv, "velocity_estimation_node");
 	VelocityEstimationNode velocity_estimation_node = VelocityEstimationNode();
 
 	velocity_estimation_node.velocity_pub = velocity_estimation_node.nh.advertise<std_msgs::Float32>("velocity", 1);

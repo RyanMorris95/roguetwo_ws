@@ -46,10 +46,12 @@ void markers_cb(const visualization_msgs::Marker& marker)
 	for (std::vector<int>::size_type i = 0; i != marker.points.size(); i++)
 	{
 		pcl::PointXYZ point;
-		if (use_imu)
-			point = pcl::PointXYZ(marker.points[i].x, marker.points[i].y, marker.points[i].z);
-		else
-			point = pcl::PointXYZ(marker.points[i].z, -1*marker.points[i].x, -1*marker.points[i].y);
+		//std::cout << "Use IMU: " << use_imu << std::endl;
+		//if (use_imu)
+		//point = pcl::PointXYZ(marker.points[i].x, marker.points[i].y, marker.points[i].z);
+		//td::cout << "X: " << marker.points[i].x << " Y: " << marker.points[i].y << " Z: " << marker.points[i].z << std::endl;
+		//else
+		point = pcl::PointXYZ(marker.points[i].z, -1*marker.points[i].x, -1*marker.points[i].y);
 		
 		pcl->points.push_back(point);
 	}

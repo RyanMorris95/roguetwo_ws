@@ -28,7 +28,7 @@ class JoyToAckermann(object):
 		axes = joy_msg.axes
 		buttons = joy_msg.buttons
 
-		if buttons[0] == 1:  # button a clicked
+		if buttons[7] == 1:  # button a clicked
 			self.start_autonomous = not self.start_autonomous
 			bool_msg = Bool()
 			bool_msg = self.start_autonomous
@@ -39,6 +39,13 @@ class JoyToAckermann(object):
 			bool_msg = Bool()
 			bool_msg = self.front_camera
 			self.pub_switch_cameras.publish(bool_msg)
+
+		if axes[-1] == 1:  # up on the D pad
+			self.max_motor_vel += 0.05
+			print ('Max Motor Velocity Increased To: ' + str(self.max_motor_vel))
+		elif axes[-1] == -1:   # down on the D pad
+			self.max_motor_vel -= 0.05
+			print ('Max Motor Velocity Decreased To: ' + str(self.max_motor_vel))
 
 		if buttons[2] == 1:  # button x clicked
 			motor_velocity = 0

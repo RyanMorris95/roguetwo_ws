@@ -1,6 +1,6 @@
 <launch>
   <arg name="cam_name" />
-  <arg name="calib_file" default="$(find roguetwo_perception)/svo_files/ps3_mono_imu_calib.yaml"/>
+  <arg name="calib_file" default="$(find roguetwo_perception)/svo_files/ps3_mono_calib.yaml"/>
 
   <!-- SVO node -->
   <node pkg="svo_ros" type="svo_node" name="svo" clear_params="true" output="screen">
@@ -12,7 +12,7 @@
     <param name="calib_file" value="$(arg calib_file)" />
 
     <!--Parameters-->
-    <rosparam file="$(find roguetwo_perception)/svo_files/fast_pinhole.yaml" />
+    <rosparam file="$(find roguetwo_perception)/svo_files/pinhole.yaml" />
 
   </node>
 

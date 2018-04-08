@@ -34,17 +34,17 @@ T_world_imuinit/qw: 1
 kfselect_criterion: FORWARD    # alterntive: DOWNLOOKING
 # The following kfselect_* ONLY affects FORWARD
 # If the number of features: >upper, no keyframe; <lower, take keyframe
-kfselect_numkfs_upper_thresh: 160
+kfselect_numkfs_upper_thresh: 120
 kfselect_numkfs_lower_thresh: 70
 # If the current frame is within the following range of any visible keyframes,
 # do not take a new keyframe.
 # You can lower these values for more keyframes
-kfselect_min_dist_metric: 0.01
+kfselect_min_dist_metric: 0.1
 kfselect_min_angle: 20
 # If the median disparity from the last keyframe is smaller,
 # do not take a new keyframe
 # You can lower this value for more keyframes
-kfselect_min_disparity: 30
+kfselect_min_disparity: 40
 # When taking a new keyframe,
 # we can already update the newly initialized seeds with old keyframes.
 # This is important for forward looking case.
@@ -94,10 +94,10 @@ seed_convergence_sigma2_thresh: 200
 
 # IMU
 # Normally the prior should be 0 if not using IMU.
-use_imu: true
+use_imu: false
 poseoptim_prior_lambda: 0.0 # Gyroscope prior in pose optimization
-img_align_prior_lambda_rot: 5.0 # Gyroscope prior in sparse image alignment
-img_align_prior_lambda_trans: 1.0 # Constant velocity assumption prior in sparse image alignment
+img_align_prior_lambda_rot: 0.0 # Gyroscope prior in sparse image alignment
+img_align_prior_lambda_trans: 0.0 # Constant velocity assumption prior in sparse image alignment
 
 # Dense input
 publish_every_nth_dense_input: 5

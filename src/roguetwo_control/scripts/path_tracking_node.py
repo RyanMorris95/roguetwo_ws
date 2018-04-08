@@ -8,6 +8,7 @@ import pure_pursuit
 from roguetwo_navigation.msg import Path
 from roguetwo_perception.msg import SE2
 from ackermann_msgs.msg import AckermannDrive
+from std_msgs.msg import Float32, Bool
 
 
 class PathTrackingNode(object):
@@ -17,6 +18,7 @@ class PathTrackingNode(object):
         # setup subscribers
         rospy.Subscriber('/local_path', Path, self.update_local_path, queue_size=1)
         rospy.Subscriber('/se2_state', SE2, self.update_se2, queue_size=1)
+        rospy.Subscriber('/velocity', Float32, self.update_velocity, queue_size=1)
 
         self.x = 0
         self.y = 0
@@ -24,7 +26,7 @@ class PathTrackingNode(object):
         self.v = 0
         self.t = 0
         self.target_index = 0
-        self.target_speed = 0.50  # m/s
+        self.target_speed = 0.35  # m/s
         self.state = pure_pursuit.State(x=0, y=0, yaw=0)
         self.current_se2 = None
         self.path = None
@@ -32,6 +34,9 @@ class PathTrackingNode(object):
         self.max_steering_angle = 0.25
 
         self.path_tracking_timer = rospy.Timer(rospy.Duration(self.dt), self.path_tracking)
+
+    def update_velocity(self, velocity)
+        self.state.v = velocity
 
     def update_se2(self, se2):
         """
@@ -73,6 +78,11 @@ class PathTrackingNode(object):
                 self.state.v = self.state.v + ai * self.dt
                 if di > self.max_steering_angle:
                     di = self.max_steering_angle
+                if di < -self.max_steering_angle:
+                    di = -self.max_steering_angle
+
+                if self.state.v > self.target_speed:
+                    self.state.v = self.target_speed
 
                 msg = AckermannDrive()
                 msg.speed = self.state.v
