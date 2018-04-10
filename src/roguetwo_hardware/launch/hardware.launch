@@ -1,3 +1,4 @@
 <launch>
 	<node pkg="rougetwo_hardware" type="arduino_comm.py" name="arduino_comm" output="screen" />
+	<node pkg="roguetwo_hardware" type="gps_comm2.py" name="gps_comm" output="screen" />
 </launch>

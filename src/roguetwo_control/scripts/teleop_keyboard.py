@@ -17,7 +17,7 @@ def getKey():
 
 
 speed = 0.5
-turn = 0.25
+turn = 0.45
 
 
 def vels(speed, turn):

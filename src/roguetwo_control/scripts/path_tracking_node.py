@@ -26,17 +26,17 @@ class PathTrackingNode(object):
         self.v = 0
         self.t = 0
         self.target_index = 0
-        self.target_speed = 0.35  # m/s
+        self.target_speed = 0.5  # m/s
         self.state = pure_pursuit.State(x=0, y=0, yaw=0)
         self.current_se2 = None
         self.path = None
         self.dt = 0.1
-        self.max_steering_angle = 0.25
+        self.max_steering_angle = 0.35
 
         self.path_tracking_timer = rospy.Timer(rospy.Duration(self.dt), self.path_tracking)
 
-    def update_velocity(self, velocity)
-        self.state.v = velocity
+    def update_velocity(self, velocity):
+        v = velocity.data
 
     def update_se2(self, se2):
         """
@@ -84,6 +84,7 @@ class PathTrackingNode(object):
                 if self.state.v > self.target_speed:
                     self.state.v = self.target_speed
 
+                print (self.state.v, di)
                 msg = AckermannDrive()
                 msg.speed = self.state.v
                 msg.acceleration = 0.5
@@ -92,7 +93,6 @@ class PathTrackingNode(object):
                 msg.steering_angle_velocity = 1
 
                 self.pub_ackermann_cmd.publish(msg)
-                print (msg)
 
 
 if __name__ == '__main__':

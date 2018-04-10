@@ -3,14 +3,14 @@
 
 PathPlanningNode::PathPlanningNode()
 {
-	goal.x = 10;
+	goal.x = 0;
 	goal.y = 0;
 	delta_time = 0.1;
 }
 
 void PathPlanningNode::start_autonomous(std_msgs::Bool start)
 {
-	goal.x = 10;
+	goal.x = 0;
 	goal.y = 0;
 	std::cout << "Starting autonmous mode." << std::endl;
 	timer = nh.createTimer(
@@ -54,16 +54,6 @@ void PathPlanningNode::update_obstacles(const nav_msgs::OccupancyGrid occupancy_
 
 void PathPlanningNode::generate_dynamic_window_path(const ros::TimerEvent& event)
 {
-	Point obstacle;
-	obstacle.x = 5;
-	obstacle.y = 0;
-	obstacles.push_back(obstacle);
-	obstacle.x = 5;
-	obstacle.y = 0.25;
-	obstacles.push_back(obstacle);
-	obstacle.x = 5;
-	obstacle.y = -0.25;
-	obstacles.push_back(obstacle);
 
 	trajectory = dynamic_window_planner.plan(
 		robot_state, 
@@ -71,16 +61,16 @@ void PathPlanningNode::generate_dynamic_window_path(const ros::TimerEvent& event
 		goal, 
 		obstacles);
 
-	double distance_from_goal = sqrt(pow((robot_state.x - goal.x), 2) +
-										pow((robot_state.y - goal.y), 2));
-
-	std::cout << "distance_from_goal: " << distance_from_goal << std::endl;
-
 	robot_state = dynamic_window_planner.motion(robot_state, dynamic_window_planner.best_controls_, delta_time);
 
 	robot_state.x = se2.x;
 	robot_state.y = se2.y;
 	robot_state.yaw = se2.yaw;
+
+	double distance_from_goal = sqrt(pow((robot_state.x - goal.x), 2) +
+										pow((robot_state.y - goal.y), 2));
+
+	std::cout << "distance_from_goal: " << distance_from_goal << std::endl;
 
 	roguetwo_navigation::Path path_msg;
 
@@ -119,11 +109,11 @@ int main(int argc, char** argv)
 		&PathPlanningNode::update_se2, 
 		&path_planning_node);
 
-	path_planning_node.update_obstacles_sub = path_planning_node.nh.subscribe(
-		"/projected_map",
-		1,
-		&PathPlanningNode::update_obstacles,
-		&path_planning_node);
+	// path_planning_node.update_obstacles_sub = path_planning_node.nh.subscribe(
+	// 	"/projected_map",
+	// 	1,
+	// 	&PathPlanningNode::update_obstacles,
+	// 	&path_planning_node);
 
 	path_planning_node.start_autonomous_sub = path_planning_node.nh.subscribe(
 		"/start_autonomous",
