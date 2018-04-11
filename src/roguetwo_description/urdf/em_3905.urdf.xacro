@@ -796,19 +796,93 @@ limitations under the License.
 
   <xacro:property name="height_sonar" value="0.05" />
   <xacro:property name="width_sonar" value="0.05" />
+  <xacro:property name="name5" value="sonar5" />
   <xacro:property name="name1" value="sonar1" />
   <xacro:property name="name2" value="sonar2" />
   <xacro:property name="name3" value="sonar3" />
   <xacro:property name="name4" value="sonar4" />
-  <xacro:property name="ros_topic1" value="/sonar_front_distance" />
+  <xacro:property name="ros_topic5" value="/sonar_frontR_distance" />
+  <xacro:property name="ros_topic1" value="/sonar_frontL_distance" />
   <xacro:property name="ros_topic2" value="/sonar_left_distance" />
   <xacro:property name="ros_topic3" value="/sonar_right_distance" />
   <xacro:property name="ros_topic4" value="/sonar_back_distance" />
   <xacro:property name="update_rate" value="10" />
   <xacro:property name="min_range" value="0.02" />
   <xacro:property name="max_range" value="4.5" />
-  <xacro:property name="field_of_view" value="1" />
-  <xacro:property name="ray_count" value="2" />
+  <xacro:property name="field_of_view" value="0.0" />
+  <xacro:property name="ray_count" value="1" />
+
+  
+
+
+  <!-- Base Link -->
+  <link name="${name5}_link">
+      <inertial>
+        <mass value="0.001" />
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <inertia ixx="0.000000017" ixy="0" ixz="0" iyy="0.000000017" iyz="0" izz="0.000000017" />
+      </inertial>
+        <visual>
+          <origin xyz="0 0 ${height_sonar/2}" rpy="0 0 0"/>
+          <geometry>
+            <box size="${width_sonar} ${width_sonar} ${height_sonar}"/>
+          </geometry>
+          <material name="orange"/>
+        </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <box size="0.01 0.01 0.01" />
+        </geometry>
+      </collision>
+  </link>
+
+  <joint name="${name5}_joint" type="fixed">
+    <axis xyz="0 1 0" />
+    <origin xyz=".25 -.15 0.15" rpy="0 0 0"/>
+    <parent link="chassis"/>
+    <child link="${name5}_link"/>
+  </joint>
+
+    <gazebo reference="${name5}_link">
+      <sensor type="ray" name="${name5}">
+        <always_on>true</always_on>
+        <update_rate>${update_rate}</update_rate>
+        <pose>0 0 0 0 0 0</pose>
+        <visualize>true</visualize>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>${ray_count}</samples>
+              <resolution>1</resolution>
+              <min_angle>-${field_of_view/2}</min_angle>
+              <max_angle> ${field_of_view/2}</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>${ray_count}</samples>
+              <resolution>1</resolution>
+              <min_angle>-${field_of_view/2}</min_angle>
+              <max_angle> ${field_of_view/2}</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>${min_range}</min>
+            <max>${max_range}</max>
+            <resolution>0.01</resolution>
+          </range>
+        </ray>
+
+        <plugin name="gazebo_ros_${name5}_controller" filename="libhector_gazebo_ros_sonar.so">
+          <gaussianNoise>0.005</gaussianNoise>
+          <topicName>${ros_topic5}</topicName>
+          <frameId>${name5}_link</frameId>
+        </plugin>
+      </sensor>
+    </gazebo>
+
+
+
+
 
 
   <!-- Base Link -->
@@ -835,7 +909,7 @@ limitations under the License.
 
   <joint name="${name1}_joint" type="fixed">
     <axis xyz="0 1 0" />
-    <origin xyz=".25 0 0.15" rpy="0 -0.55 0"/>
+    <origin xyz=".25 .15 0.15" rpy="0 0 0"/>
     <parent link="chassis"/>
     <child link="${name1}_link"/>
   </joint>
@@ -900,7 +974,7 @@ limitations under the License.
 
   <joint name="${name2}_joint" type="fixed">
     <axis xyz="0 1 0" />
-    <origin xyz=".0 .25 0.15" rpy="0 -0.55 1.5"/>
+    <origin xyz=".0 .25 0.15" rpy="0 0 1.3"/>
     <parent link="chassis"/>
     <child link="${name2}_link"/>
   </joint>
@@ -966,7 +1040,7 @@ limitations under the License.
 
   <joint name="${name3}_joint" type="fixed">
     <axis xyz="0 1 0" />
-     <origin xyz=".0 -.25 0.15" rpy="0 -0.55 -1.5"/>    
+     <origin xyz=".0 -.25 0.15" rpy="0 0 -1.3"/>    
     <parent link="chassis"/>
     <child link="${name3}_link"/>
   </joint>
@@ -1032,7 +1106,7 @@ limitations under the License.
 
   <joint name="${name4}_joint" type="fixed">
     <axis xyz="0 1 0" />
-     <origin xyz="-.25 0 0.15" rpy="0 -0.55 3.0"/>    
+     <origin xyz="-.25 0 0.15" rpy="0 0 3.14"/>    
     <parent link="chassis"/>
     <child link="${name4}_link"/>
   </joint>
