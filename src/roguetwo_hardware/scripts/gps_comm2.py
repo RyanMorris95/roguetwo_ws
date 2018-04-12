@@ -2,7 +2,7 @@
 import rospy 
 
 from sensor_msgs.msg import NavSatFix, NavSatStatus
-from std_msgs.msg import Header
+from std_msgs.msg import Header, Float32
 from nav_msgs.msg import Odometry
 from gps import *
 
@@ -10,11 +10,15 @@ from gps import *
 class GPSComm(object):
     def __init__(self):
         self.navsat_pub = rospy.Publisher("/gps/fix", NavSatFix, queue_size=1)
+        self.lat_vel_pub = rospy.Publisher("/gps/lat_vel", Float32, queue_size=1)
+        self.lon_vel_pub = rospy.Publisher("/gps/lon_vel", Float32, queue_size=1)
+        self.speed_pub = rospy.Publisher("/gps/speed", Float32, queue_size=1)
         self.gpsd = gps(mode=WATCH_ENABLE)  # starting the gps stream of info
         self.gps_update = rospy.Timer(rospy.Duration(0.1), self.run)
 
     def run(self, event):
         self.gpsd.next()
+        self.publish_gps()
 
 
     def publish_gps(self):
@@ -36,6 +40,12 @@ class GPSComm(object):
                                     0, 0, 2.5]
 
         self.navsat_pub.publish(navsat)
+
+        speed = self.gpsd.fix.speed
+        speed_msg = Float32()
+        speed_msg.data = speed
+        self.speed_pub.publish(speed_msg)
+        print (navsat)
 
 
 if __name__ == '__main__':

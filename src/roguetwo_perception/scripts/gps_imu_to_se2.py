@@ -18,8 +18,8 @@ class ToSE2(object):
     Then the two are combined to for an SE2 measurement.
     """
     def __init__(self):
-        rospy.Subscriber("/gps/fix", NavSatFix, self.update_position, queue_size=1)
-        rospy.Subscriber("/imu", Imu, self.update_yaw)
+        rospy.Subscriber("/gps", NavSatFix, self.update_position, queue_size=1)
+        rospy.Subscriber("/imu/data", Imu, self.update_yaw)
 
         self.se2_pub = rospy.Publisher("/se2_state", SE2, queue_size=1)
         self.timer = rospy.Timer(rospy.Duration(0.1), self.publish_se2)
