@@ -5,7 +5,8 @@ SensorFusion::SensorFusion()
 {
     dt = 0.01;
     float gps_std = pow(0.5, 2);
-    float imu_std = pow(0.0007199025610000001 / 9.81, 2);  // the covariance given by the imu is in g's
+    //float imu_std = pow(0.0007199025610000001, 2);  // the covariance given by the imu is in g's
+    float imu_std = pow(0.05, 2);
 
     MatrixXf A(2, 2);
     A << 1, dt,
@@ -42,17 +43,20 @@ SensorFusion::SensorFusion()
     y_kalman.set_initial(X0, P0);
 
     prev_seconds = 0;
+
+    curr_yaw = 0;
+
+    predict_called = false;
 }
 
 void SensorFusion::predict(const sensor_msgs::Imu imu_msg)
 {
-    
+    std::cout << "Predict called" << std::endl;
     geometry_msgs::Vector3 accelerations = imu_msg.linear_acceleration;
     float x_accel = accelerations.x / 9.81;  // convert g to m/s^2
     float y_accel = accelerations.y / 9.81;
-
-    std::cout << "X Accel: " << x_accel << std::endl;
-    std::cout << "Y Accel: " << y_accel << std::endl;
+    // float x_accel = accelerations.x;  // convert g to m/s^2
+    // float y_accel = accelerations.y;
 
     VectorXf u(1, 1);
     u << x_accel;
@@ -60,26 +64,30 @@ void SensorFusion::predict(const sensor_msgs::Imu imu_msg)
 
     u(0, 0) = y_accel;
     y_kalman.predict(u);
-    
+
+    predict_called = true;
     this->publish();
 }
 
 
 void SensorFusion::update(const roguetwo_perception::SE2 se2_msg)
 {
-    float x = se2_msg.x;
-    float y = se2_msg.y;
-    curr_yaw = se2_msg.yaw;
+    if (predict_called == true)
+    {
+        float x = se2_msg.x;
+        float y = se2_msg.y;
+        curr_yaw = se2_msg.yaw;
 
-    VectorXf Z(2, 1);
-    Z << x, 0.0;
-    x_kalman.update(Z);
+        VectorXf Z(2, 1);
+        Z << x, 0.0;
+        x_kalman.update(Z);
 
-    Z(0, 0) = y;
-    Z(1, 0) = 0;
-    y_kalman.update(Z);
+        Z(0, 0) = y;
+        Z(1, 0) = 0;
+        y_kalman.update(Z);
 
-    this->publish();
+        this->publish();
+    }
 }
 
 
@@ -88,11 +96,17 @@ void SensorFusion::publish()
     roguetwo_perception::SE2 se2_msg = roguetwo_perception::SE2();
     se2_msg.x = x_kalman.X0(0, 0);
     se2_msg.y = y_kalman.X0(0, 0);
+    se2_msg.yaw = curr_yaw;
 
+    float velocity = x_kalman.X0(1, 0) * cos(curr_yaw);
     // std_msgs::Header header = std_msgs::Header();
     // header.stamp = ros::Time::now();
     // se2_msg.header = header;
     se2_filtered_pub.publish(se2_msg);
+
+    std_msgs::Float32 vel_msg = std_msgs::Float32();
+    vel_msg.data = velocity;
+    velocity_pub.publish(vel_msg);
 }
 
 
@@ -116,8 +130,15 @@ int main(int argc, char** argv)
         &sensor_fusion
     );
 
+    // sensor_fusion.predict_sub2 = sensor_fusion.nh.subscribe(
+    //     "/imu",
+    //     1,
+    //     &SensorFusion::predict,
+    //     &sensor_fusion
+    // );
+
     sensor_fusion.se2_filtered_pub = sensor_fusion.nh.advertise<roguetwo_perception::SE2>("/se2_state_filtered", 1);
-    
+    sensor_fusion.velocity_pub = sensor_fusion.nh.advertise<std_msgs::Float32>("/velocity", 1);
     ros::spin();
 
     return 0;

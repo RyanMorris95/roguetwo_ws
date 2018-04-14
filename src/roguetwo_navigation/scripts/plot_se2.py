@@ -28,14 +28,13 @@ class PlotSE2(object):
     def plot(self, event):
         plt.clf()
         try:
-            print (len(self.se2_x), len(self.se2_y), len(self.se2_x_f), len(self.se2_y_f))
-            plt.scatter(self.se2_x, self.se2_y, c='red', label='No Filter')
-            plt.scatter(self.se2_x_f, self.se2_y_f, c='blue', label='Kalman Filter')
+            plt.scatter(self.se2_x, self.se2_y, c='red', label='No Filter', s=4)
+            plt.scatter(self.se2_x_f, self.se2_y_f, c='blue', label='Kalman Filter', s=0.5)
 
             plt.legend()
             plt.grid()
-            plt.xlim(-12, 12)
-            plt.ylim(-12, 12)
+            plt.xlim(-20, 20)
+            plt.ylim(-20, 20)
 
             self.fig.canvas.draw()
         except:

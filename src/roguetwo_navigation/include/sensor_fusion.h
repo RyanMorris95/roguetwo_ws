@@ -7,6 +7,7 @@
 #include <sensor_msgs/Imu.h>
 #include <nav_msgs/Odometry.h>
 #include <std_msgs/Header.h>
+#include <std_msgs/Float32.h>
 #include <math.h>
 #include "kalman_filter.h"
 
@@ -24,8 +25,10 @@ public:
     ros::NodeHandle nh;
     ros::Subscriber update_sub;
     ros::Subscriber predict_sub;
+    ros::Subscriber predict_sub2;
     
     ros::Publisher se2_filtered_pub;
+    ros::Publisher velocity_pub;
 
 private:
     KalmanFilter x_kalman;
@@ -40,6 +43,8 @@ private:
     float dt;
 
     double prev_seconds;
+
+    bool predict_called;
 };
 
 

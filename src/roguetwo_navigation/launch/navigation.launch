@@ -1,3 +1,4 @@
 <launch>
     <node pkg="roguetwo_navigation" type="path_planning_node" name="path_planning_node" output="screen" />
+    <node pkg="roguetwo_navigation" type="sensor_fusion" name="sensor_fusion" output="screen" />
 </launch>

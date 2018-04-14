@@ -1,0 +1,8 @@
+min_steering_pwm: 90
+max_steering_pwm: 180
+min_steering_angle: -0.35
+max_steering_nagle: 0.35
+min_motor_pwm: -80
+max_motor_pwm: 80
+min_motor_vel: -0.5
+max_motor_vel: 0.5

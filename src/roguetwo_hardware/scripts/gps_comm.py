@@ -16,7 +16,7 @@ origin_lat = None
 origin_lon = None
 first = False
 
-os.system('clear') #clear the terminal (optional)
+#os.system('clear') #clear the terminal (optional)
  
 class GpsPoller(threading.Thread):
   def __init__(self):
@@ -36,24 +36,24 @@ def publish_gps(event):
     #It may take a second or two to get good data
     #print gpsd.fix.latitude,', ',gpsd.fix.longitude,'  Time: ',gpsd.utc
 
-    os.system('clear')
+    # os.system('clear')
 
-    print
-    print ' GPS reading'
-    print '----------------------------------------'
-    print 'latitude    ' , gpsd.fix.latitude
-    print 'longitude   ' , gpsd.fix.longitude
-    print 'time utc    ' , gpsd.utc,' + ', gpsd.fix.time
-    print 'altitude (m)' , gpsd.fix.altitude
-    print 'epx         ' , gpsd.fix.epx
-    print 'epv         ' , gpsd.fix.epv
-    print 'ept         ' , gpsd.fix.ept
-    print 'speed (m/s) ' , gpsd.fix.speed
-    print 'climb       ' , gpsd.fix.climb
-    print 'track       ' , gpsd.fix.track
-    print 'mode        ' , gpsd.fix.mode
-    print
-    print 'sats        ' , gpsd.satellites
+    # print
+    # print ' GPS reading'
+    # print '----------------------------------------'
+    # print 'latitude    ' , gpsd.fix.latitude
+    # print 'longitude   ' , gpsd.fix.longitude
+    # print 'time utc    ' , gpsd.utc,' + ', gpsd.fix.time
+    # print 'altitude (m)' , gpsd.fix.altitude
+    # print 'epx         ' , gpsd.fix.epx
+    # print 'epv         ' , gpsd.fix.epv
+    # print 'ept         ' , gpsd.fix.ept
+    # print 'speed (m/s) ' , gpsd.fix.speed
+    # print 'climb       ' , gpsd.fix.climb
+    # print 'track       ' , gpsd.fix.track
+    # print 'mode        ' , gpsd.fix.mode
+    # print
+    # print 'sats        ' , gpsd.satellites
 
     navsat = NavSatFix()
     header = Header()
@@ -80,16 +80,8 @@ def publish_gps(event):
                                     gpsd.fix.longitude,
                                     origin_lat,
                                     origin_lon)
-    print ('Odometry: ')
-    print (x, y)
-
-    odometry = Odometry()
-    header = Header()
-    header.stamp = rospy.Time.now()
-    header.frame_id = "base_footprint"
-    odometry.header = header
-    odometry.child_frame_id = "base_link"
-
+    # print ('Odometry: ')
+    # print (x, y)
     pub_navsat.publish(navsat)
 
 if __name__ == '__main__':

@@ -17,7 +17,7 @@ class PathTrackingNode(object):
     def __init__(self):
         # setup subscribers
         rospy.Subscriber('/local_path', Path, self.update_local_path, queue_size=1)
-        rospy.Subscriber('/se2_state', SE2, self.update_se2, queue_size=1)
+        rospy.Subscriber('/se2_state_filtered', SE2, self.update_se2, queue_size=1)
         rospy.Subscriber('/velocity', Float32, self.update_velocity, queue_size=1)
 
         self.x = 0
@@ -86,7 +86,7 @@ class PathTrackingNode(object):
 
                 print (self.state.v, di)
                 msg = AckermannDrive()
-                msg.speed = self.state.v
+                msg.speed = 0.5
                 msg.acceleration = 0.5
                 msg.jerk = 1.0
                 msg.steering_angle = di
