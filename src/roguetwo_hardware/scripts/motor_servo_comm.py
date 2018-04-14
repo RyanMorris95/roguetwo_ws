@@ -5,6 +5,8 @@ from __future__ import division
 import rospy
 import serial
 import math
+import time
+import Adafruit_PCA9685
 
 from sklearn import preprocessing
 from ackermann_msgs.msg import AckermannDrive
@@ -26,6 +28,9 @@ class ArduinoComm(object):
         self.max_pwm_steering = 180
         self.min_pwm_motor = -80
         self.max_pwm_motor = 80
+
+        self.pwm = Adafruit_PCA9685.PCA9685()
+        self.pwm.set_pwm_freq(60)
 
     def update_speed_bounds(self, speed_msg):
         new_speed_bound = speed_msg.data
@@ -96,13 +101,19 @@ class ArduinoComm(object):
 
         if abs(speed_pwm) > 20:
             pwm_message = str(speed_pwm) + " " + str(steering_pwm) + "\n"
-            # self.ser.write(pwm_message)
+            self.set_motor_pulse(speed_pwm)
+            self.set_steering_pulse(steering_pwm)
             rospy.loginfo_throttle(30, "Motor_Comm: " + pwm_message)
         else:
-            pwm_message = str(0.0) + " " + str(0.0) + "\n"
-            # self.ser.write(pwm_message)
+            self.set_motor_pulse(0)
+            self.set_steering_pulse(0)
             rospy.loginfo_throttle(60, "Motor_Comm: Need to apply pwm to steer.")
 
+    def set_steering_pulse(self, pwm_command):
+        self.pwm.set_pwm(0, 0, pwm_command)
+
+    def set_motor_pulse(self, pwm_command):
+        self.pwm.set_pwm(1, 0, pwm_command)
 
 if __name__ == "__main__":
     rospy.init_node('motor_servo_comm')
