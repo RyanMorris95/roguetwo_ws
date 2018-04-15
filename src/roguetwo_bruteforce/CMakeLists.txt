@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(roguetwo_hardware)
+project(roguetwo_bruteforce)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -8,11 +8,12 @@ project(roguetwo_hardware)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  ackermann_msgs
   roscpp
   rospy
 )
 
-find_library(WIRINGPI_LIBRARY wiringPi /home/ryan/wiringPi)
+#find_library(WIRINGPI_LIBRARY wiringPi /home/rain/wiringPi)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -105,8 +106,11 @@ find_library(WIRINGPI_LIBRARY wiringPi /home/ryan/wiringPi)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES roguetwo_sensors
-  CATKIN_DEPENDS roscpp rospy
+#  LIBRARIES stuff
+   CATKIN_DEPENDS 
+	ackermann_msgs
+	roscpp 
+	rospy
 #  DEPENDS system_lib
 )
 
@@ -123,7 +127,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/roguetwo_sensors.cpp
+#   src/${PROJECT_NAME}/stuff.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -134,7 +138,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
- add_executable(roguetwo_sensor src/sensors.cpp)
+ add_executable(roguetwo_bruteforce_node bruteforce.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -144,12 +148,12 @@ include_directories(
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(roguetwo_sensor ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} wiringPi)
+ add_dependencies(roguetwo_bruteforce_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
+)
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(roguetwo_sensor
+ target_link_libraries(roguetwo_bruteforce_node
    ${catkin_LIBRARIES}
-   ${WIRINGPI_LIBRARY}
  )
 
 #############
@@ -192,7 +196,7 @@ add_dependencies(roguetwo_sensor ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_roguetwo_sensors.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_stuff.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
