@@ -1,11 +1,13 @@
 import rospy
 import matplotlib.pyplot as plt
 from roguetwo_perception.msg import SE2
+from nav_msgs.msg import Odometry
 
 class PlotSE2(object):
     def __init__(self):
         rospy.Subscriber("/se2_state", SE2, self.update_se2, queue_size=1)
         rospy.Subscriber("/se2_state_filtered", SE2, self.update_se2_filtered, queue_size=1)
+        rospy.Subscriber("/odometry/filtered", Odometry, self.update_se2_ekf, queue_size=1)
         self.fig = plt.figure()
 
         self.se2_list = []
@@ -14,6 +16,8 @@ class PlotSE2(object):
         self.se2_y = []
         self.se2_x_f = []
         self.se2_y_f = []
+        self.se2_x_ekf = []
+        self.se2_y_ekf = []
 
         rospy.Timer(rospy.Duration(0.1), self.plot)
 
@@ -25,12 +29,16 @@ class PlotSE2(object):
         self.se2_x_f.append(se2.x)
         self.se2_y_f.append(se2.y)
 
+    def update_se2_ekf(self, odometry):
+        self.se2_x_ekf.append(odometry.pose.pose.position.x)
+        self.se2_y_ekf.append(odometry.pose.pose.position.y)
+
     def plot(self, event):
         plt.clf()
         try:
             plt.scatter(self.se2_x, self.se2_y, c='red', label='No Filter', s=4)
             plt.scatter(self.se2_x_f, self.se2_y_f, c='blue', label='Kalman Filter', s=0.5)
-
+            plt.scatter(self.se2_x_ekf, self.se2_y_ekf, c='green', label='EKF', s=2)
             plt.legend()
             plt.grid()
             plt.xlim(-20, 20)

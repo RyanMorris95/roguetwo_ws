@@ -3,6 +3,12 @@
 
 KalmanFilter::KalmanFilter()
 {
+	a = 1.0;
+}
+
+void KalmanFilter::set_alpha(float _a)
+{
+	a = _a;
 }
 
 void KalmanFilter::set_fixed( MatrixXf _A, MatrixXf _H, MatrixXf _Q, MatrixXf _R, MatrixXf _B )
@@ -22,7 +28,7 @@ void KalmanFilter::set_initial( VectorXf _X0, MatrixXf _P0 ){
 
 void KalmanFilter::predict( VectorXf U ){
   X = (A * X0) + (B * U);
-  P = (A * P0 * A.transpose()) + Q;
+  P = pow(a, 2) * (A * P0 * A.transpose()) + Q;
 }
 
 void KalmanFilter::update( VectorXf Z ) {

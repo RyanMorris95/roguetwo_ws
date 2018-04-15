@@ -58,7 +58,7 @@ def publish_gps(event):
     navsat = NavSatFix()
     header = Header()
     header.stamp = rospy.Time.now()
-    header.frame_id = "base_footprint"
+    header.frame_id = "base_link"
     navsat.header = header
     navsat_status = NavSatStatus()
     navsat_status.status = 0
@@ -76,10 +76,6 @@ def publish_gps(event):
       origin_lat = gpsd.fix.latitude
       origin_lon = gpsd.fix.longitude
 
-    (x,y) = geonav_conversions.ll2xy(gpsd.fix.latitude,
-                                    gpsd.fix.longitude,
-                                    origin_lat,
-                                    origin_lon)
     # print ('Odometry: ')
     # print (x, y)
     pub_navsat.publish(navsat)

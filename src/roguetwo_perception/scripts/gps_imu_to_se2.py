@@ -4,19 +4,21 @@ import rospy
 import geonav_conversions
 import PyKDL
 import numpy as np
+import alvinxy
 
 from sensor_msgs.msg import NavSatFix, NavSatStatus, Imu
-from geometry_msgs.msg import Quaternion
+from geometry_msgs.msg import Quaternion, PoseWithCovariance, TwistWithCovariance
 from roguetwo_perception.msg import SE2
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
-
+from nav_msgs.msg import Odometry
+from std_msgs.msg import Header
 
 
 class ToSE2(object):
     """
     This class takes the GPS measurements and converts it to 
     meters traveled.  Then it takes the yaw from the imu.
-    Then the two are combined to for an SE2 measurement.
+    Then the two are combined to form an SE2 measurement.
     """
     def __init__(self):
         rospy.Subscriber("/gps", NavSatFix, self.update_position, queue_size=1)
@@ -25,6 +27,8 @@ class ToSE2(object):
         rospy.Subscriber("/imu", Imu, self.update_yaw)
 
         self.se2_pub = rospy.Publisher("/se2_state", SE2, queue_size=1)
+        self.odom_pub = rospy.Publisher("/odom", Odometry, queue_size=1)
+
         self.timer = rospy.Timer(rospy.Duration(0.1), self.publish_se2)
 
         self.origin_lat = None
@@ -34,10 +38,11 @@ class ToSE2(object):
         self.current_y = None
         self.current_yaw = None
 
-        self.num_gps_readings = 10
+        self.num_gps_readings = 1
         self.gps_list = []
 
         self.okay_to_publish = False
+        self.current_orientation = None
 
     def update_position(self, navsat_msg):
         if len(self.gps_list) > self.num_gps_readings:
@@ -48,10 +53,15 @@ class ToSE2(object):
             current_lat = navsat_msg.latitude
             current_lon = navsat_msg.longitude
 
-            (self.current_x, self.current_y) = geonav_conversions.ll2xy(current_lat, 
-                                                                        current_lon, 
-                                                                        self.origin_lat, 
-                                                                        self.origin_lon)
+            # (self.current_x, self.current_y) = geonav_conversions.ll2xy(current_lat, 
+            #                                                             current_lon, 
+            #                                                             self.origin_lat, 
+            #                                                             self.origin_lon)
+            (self.current_x, self.current_y) = alvinxy.ll2xy(current_lat,
+                                                            current_lon,
+                                                            self.origin_lat,
+                                                            self.origin_lon)
+
         elif len(self.gps_list) < self.num_gps_readings:
             rospy.loginfo('gps_imu_to_se2: Have gotten ' + str(len(self.gps_list)) + ' gps reading')
             self.gps_list.append([navsat_msg.latitude, navsat_msg.longitude])
@@ -69,6 +79,7 @@ class ToSE2(object):
     def update_yaw(self, imu_msg):
         # gemoetry quaternion message
         orientation = imu_msg.orientation
+        self.current_orientation = orientation
 
         # convert quaternion message to PyKDL quaternion
         quaternion = PyKDL.Rotation.Quaternion(orientation.x, 
@@ -88,6 +99,22 @@ class ToSE2(object):
             se2.yaw = self.current_yaw
 
             self.se2_pub.publish(se2)
+
+            odom = Odometry()
+            header = Header()
+            header.stamp = rospy.Time.now()
+            header.frame_id = "odom"
+            odom.header = header
+            odom.child_frame_id = "base_link"
+            
+            pose = PoseWithCovariance()
+            pose.pose.position.x = self.current_x
+            pose.pose.position.y = self.current_y
+            pose.pose.orientation = self.current_orientation
+            odom.pose = pose
+
+            self.odom_pub.publish(odom)
+            
 
 
 if __name__ == '__main__':

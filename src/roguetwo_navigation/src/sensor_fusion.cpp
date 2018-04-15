@@ -6,7 +6,7 @@ SensorFusion::SensorFusion()
     dt = 0.01;
     float gps_std = pow(0.5, 2);
     //float imu_std = pow(0.0007199025610000001, 2);  // the covariance given by the imu is in g's
-    float imu_std = pow(0.05, 2);
+    float imu_std = pow(0.008, 2);
 
     MatrixXf A(2, 2);
     A << 1, dt,
@@ -34,11 +34,19 @@ SensorFusion::SensorFusion()
     MatrixXf B(2, 1);
     B << pow(0.5*dt, 2), dt;
 
+    // turns the filters into a fading memory filter
+    // the filter's covariance will forget past measurements
+    // values should be between 1.01 and 1.05 and 1.0 to not use
+    float y_alpha = 1.02;
+    float x_alpha = 1.00;
+
     x_kalman = KalmanFilter();
+    x_kalman.set_alpha(x_alpha);
     x_kalman.set_fixed(A, H, Q, R, B);
     x_kalman.set_initial(X0, P0);
 
     y_kalman = KalmanFilter();
+    y_kalman.set_alpha(y_alpha);
     y_kalman.set_fixed(A, H, Q, R, B);
     y_kalman.set_initial(X0, P0);
 
@@ -51,7 +59,6 @@ SensorFusion::SensorFusion()
 
 void SensorFusion::predict(const sensor_msgs::Imu imu_msg)
 {
-    std::cout << "Predict called" << std::endl;
     geometry_msgs::Vector3 accelerations = imu_msg.linear_acceleration;
     float x_accel = accelerations.x / 9.81;  // convert g to m/s^2
     float y_accel = accelerations.y / 9.81;

@@ -46,7 +46,10 @@ public:
     VectorXf X0; // initial state vector
     MatrixXf P0; // initial staate covariance matrix
 
+    float a;
+
     //KalmanFilter(int _n, int _m);
+    void set_alpha(float _a);
 
     void set_fixed(MatrixXf _A, MatrixXf _B, MatrixXf _H, MatrixXf _Q, MatrixXf _R);
 
