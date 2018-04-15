@@ -9,6 +9,7 @@
 #include "tf2_msgs/TFMessage.h"
 #include "sensor_msgs/Range.h"
 #include <tf/transform_datatypes.h>
+#include "wiringPi.h"
 
 bool initial = true;
 bool direction = true;				
@@ -114,6 +115,9 @@ int main(int argc, char** argv){
 
 	ros::init(argc, argv, "bruteforce");
 
+	wiringPiSetup();
+	
+
 	ros::NodeHandle nh;
 
 	ros::Subscriber place = nh.subscribe("tf", 10, coords);
@@ -121,7 +125,7 @@ int main(int argc, char** argv){
 	ros::Subscriber sensor0 = nh.subscribe("sonar_frontL_distance", 10, sens0);
 	ros::Subscriber sensor1 = nh.subscribe("sonar_right_distance", 10, sens1);
 	ros::Subscriber sensor2 = nh.subscribe("sonar_back_distance", 10, sens2);
-	ros::Subscriber sensor3 = nh.subscribe("sonar_left_distance", 10, sens3);
+	ros::Subscriber sensor3 = nh.subscribe("sonar_left_distance", 10, sens3); 
 	ros::spinOnce();
 	//ros::spin();
 
