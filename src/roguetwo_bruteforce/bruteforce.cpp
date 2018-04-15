@@ -238,7 +238,7 @@ int main(int argc, char** argv){
 		//ros::spinOnce();
 		//face = Yaw == angle;
 
-		if (frontL >= 1.1 && frontR >= 1.1 && !face){
+		if (frontL >= 65 && frontR >= 65 && !face){
 
 			msg.steering_angle = direction ? -0.30 : 0.30;
 			msg.speed = 1;
@@ -246,7 +246,7 @@ int main(int argc, char** argv){
 			ros::spinOnce();
 		}
 
-		if (frontL < 0.4 && frontR < 0.4) {
+		if (frontL < 20 && frontR < 20) {
 
 			msg.speed = -1.0;
 			msg.steering_angle = 0.0;
@@ -255,7 +255,7 @@ int main(int argc, char** argv){
 			ros::spinOnce();
 		}
 
-		if (frontL < 1.1 && frontR < 1.1) {
+		if (frontL < 65 && frontR < 65) {
 
 			boxfront = true;
 			box = true;
@@ -263,7 +263,7 @@ int main(int argc, char** argv){
 			ros::spinOnce();
 		}
 
-		else if (frontL < 0.8 && frontR > 0.8){
+		else if (frontL < 60 && frontR > 60){
 
 			boxfront = true;
 			direction = 1;
@@ -271,7 +271,7 @@ int main(int argc, char** argv){
 			ros::spinOnce();
 		}
 
-		else if (frontR < 0.8 && frontL > 0.8){
+		else if (frontR < 60 && frontL > 60){
 
 			boxfront = true;
 			direction = 0;
@@ -285,7 +285,7 @@ int main(int argc, char** argv){
 		
 		while (boxfront && ros::ok()){
 
-			if (direction && left < 0.65 || !direction && right < 0.65) {
+			if (direction && left < 50 || !direction && right < 50) {
 
 				boxfront = false;
 				boxside = true;
@@ -307,7 +307,7 @@ int main(int argc, char** argv){
 
 		while (boxside && ros::ok()){
 
-			if (direction && left > 0.65 || !direction && right > 0.65) {
+			if (direction && left > 50 || !direction && right > 50) {
 
 				boxpass = true;
 				boxside = false;
