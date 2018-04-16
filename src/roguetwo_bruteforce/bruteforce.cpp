@@ -9,6 +9,11 @@
 #include "tf2_msgs/TFMessage.h"
 #include "sensor_msgs/Range.h"
 #include <tf/transform_datatypes.h>
+#include <geometry_msgs/Pose.h>
+#include "nav_msgs/Odometry.h" 
+#include <ros/console.h>
+#include "geometry_msgs/Pose.h"
+#include <tf/transform_datatypes.h>
 
 bool initial = true;
 bool direction = true;				
@@ -41,39 +46,54 @@ int i = 0;
 std::string robot = "base_link";
 std::string test;
 
-void coords(const tf2_msgs::TFMessage::ConstPtr& msg){
+// void coords(const tf2_msgs::TFMessage::ConstPtr& msg){
 
-	test = msg->transforms[0].header.frame_id;
+// 	test = msg->transforms[0].header.frame_id;
 
-	if (test.compare(robot) == 0){
+// 	if (test.compare(robot) == 0){
 
-		X = msg->transforms[0].transform.translation.x;
-		Y = msg->transforms[0].transform.translation.y;
+// 		X = msg->transforms[0].transform.translation.x;
+// 		Y = msg->transforms[0].transform.translation.y;
 
-		//qX = msg->transforms[0].transform.rotation.x;
-		//qY = msg->transforms[0].transform.rotation.y;
-		//qZ = msg->transforms[0].transform.rotation.z;
-		//qW = msg->transforms[0].transform.rotation.w;
+// 		//qX = msg->transforms[0].transform.rotation.x;
+// 		//qY = msg->transforms[0].transform.rotation.y;
+// 		//qZ = msg->transforms[0].transform.rotation.z;
+// 		//qW = msg->transforms[0].transform.rotation.w;
 
-		//angle = atan2(destY - Y, destX - X);
+// 		//angle = atan2(destY - Y, destX - X);
 
-		Yaw = tf::getYaw(msg->transforms[0].transform.rotation);
-		//printf("Yaw: %f\n", Yaw);
+// 		Yaw = tf::getYaw(msg->transforms[0].transform.rotation);
+// 		//printf("Yaw: %f\n", Yaw);
 
-		//angle = roundf(10 * angle) / 10;
-		Yaw = roundf(100 * Yaw) / 100;
-		//printf("Yaw: %f\n", Yaw);
-		//printf("angle: %f\n", angle);
+// 		//angle = roundf(10 * angle) / 10;
+// 		Yaw = roundf(100 * Yaw) / 100;
+// 		//printf("Yaw: %f\n", Yaw);
+// 		//printf("angle: %f\n", angle);
 
-		X = roundf(10 * X) / 10;
-		Y = roundf(10 * Y) / 10;
+// 		X = roundf(10 * X) / 10;
+// 		Y = roundf(10 * Y) / 10;
 
-		//face = Yaw == angle;
+// 		//face = Yaw == angle;
 
-		if (destX == X && destY == Y) home = true;
+// 		if (destX == X && destY == Y) home = true;
 
-		//printf("GOTO: %f, CURRENT: %f\n", angle, Yaw);
-	}
+// 		//printf("GOTO: %f, CURRENT: %f\n", angle, Yaw);
+// 	}
+// }
+
+void coords(const nav_msgs::Odometry::ConstPtr& msg)
+{
+	X = msg->pose.pose.position.x;
+	Y = msg->pose.pose.position.y;
+
+	tf::Quaternion q(
+		msg->pose.pose.orientation.x,
+		msg->pose.pose.orientation.y,
+		msg->pose.pose.orientation.z,
+		msg->pose.pose.orientation.w);
+	tf::Matrix3x3 m(q);
+	double roll, pitch;
+	m.getRPY(roll, pitch, Yaw);
 }
 
 void sens4(const sensor_msgs::Range::ConstPtr& msg){
@@ -116,7 +136,8 @@ int main(int argc, char** argv){
 
 	ros::NodeHandle nh;
 
-	ros::Subscriber place = nh.subscribe("tf", 10, coords);
+	//ros::Subscriber place = nh.subscribe("tf", 10, coords);
+	ros::Subscriber place = nh.subscribe("odometry/filtered", 10, coords);
 	ros::Subscriber sensor4 = nh.subscribe("sonar_frontR_distance", 10, sens4);
 	ros::Subscriber sensor0 = nh.subscribe("sonar_frontL_distance", 10, sens0);
 	ros::Subscriber sensor1 = nh.subscribe("sonar_right_distance", 10, sens1);
