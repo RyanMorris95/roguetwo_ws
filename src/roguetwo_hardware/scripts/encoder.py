@@ -6,11 +6,14 @@ import RPi.GPIO as GPIO
 import PyKDL
 import math
 
-from std_msgs.msg import Float32
+from std_msgs.msg import Float32, Header
 from sensor_msgs.msg import Imu
+from nav_msgs.msg import Odometry
+
+
 
 class RotaryEncoder(object):
-    def __init__(self, m_per_revolution=0.05, pin=15, rate=10, debug=False):
+    def __init__(self, m_per_revolution=0.05, pin=16, rate=10, debug=False):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(pin, GPIO.IN)
         GPIO.add_event_detect(pin, GPIO.FALLING, callback=self.one_revolution)
@@ -28,22 +31,27 @@ class RotaryEncoder(object):
         self.x = 0
         self.y = 0
         self.yaw = 0
+        self.orientation = 0
 
         # initialize ros interface 
         self.distance_pub = rospy.Publisher("/encoder/distance", Float32, queue_size=1)
         self.speed_pub = rospy.Publisher("/encoder/speed", Float32, queue_size=1)
-        self.x_pub = rospy.Publisher("/encoder/x", Float32, queue_size=1)
-        self.y_pub = rospy.Publisher("/encoder/y", Float32, queue_size=1)
+        self.odometry_pub = rospy.Publisher("/encoder/odometry", Odometry, queue_size=1)
         rospy.Subscriber("/imu/data", Imu, self.update_yaw)
         rospy.Subscriber("/imu", Imu, self.update_yaw)
 
     def __del__(self):
         rospy.loginfo("encoder: shutting down encoder node.")
         self.shutdown()
+    
+    def debug_test(self):
+        while True:
+            print (GPIO.input(pin))
+   
 
     def update_yaw(self, imu_msg):
         # geometry quaternion message
-        orientation = imu_msg.orientation
+        self.orientation = imu_msg.orientation
 
         # convert quaternion message to PyKDL quaternion
         quaternion = PyKDL.Rotation.Quaternion(orientation.x, 
@@ -91,11 +99,18 @@ class RotaryEncoder(object):
             self.distance_pub.publish(msg)
             msg.data = self.meters_per_second
             self.speed_pub.publish(msg)
-            msg.data = self.x
-            self.x_pub.publish(msg)
-            msg.data = self.y 
-            self.y_pub.publish(msg)
 
+            odometry = Odometry()
+            header = Header()
+            header.stamp = rospy.Time.now()
+            header.frame_id = "odom"
+            odometry.header = header
+            odometry.child_frame_id = "base_link"
+            odometry.pose.pose.position.x = self.x
+            odometry.pose.pose.position.y = self.y
+            odometry.pose.pose.orientation = self.orientation
+            self.odometry_pub.publish(odometry) 
+            
             if self.debug:
                 rospy.loginfo("encoder: seconds: " + str(seconds))
                 rospy.loginfo("encoder: distance: " + str(distance))
@@ -113,7 +128,9 @@ class RotaryEncoder(object):
 if __name__ == '__main__':
     rospy.init_node("encoder")
     node = RotaryEncoder(m_per_revolution=0.05, 
-                        pin=15, 
-                        rate=100)
-    #node.update()
-    node.calibrate()
+                        pin=16, 
+                        rate=10,
+                        debug=True)
+    #node.debug_test()
+    node.update()
+    #node.calibrate()

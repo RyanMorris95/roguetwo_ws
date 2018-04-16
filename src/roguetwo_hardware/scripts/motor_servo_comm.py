@@ -7,30 +7,39 @@ import serial
 import math
 import time
 import Adafruit_PCA9685
+import RPi.GPIO as GPIO
 
-from sklearn import preprocessing
 from ackermann_msgs.msg import AckermannDrive
 from std_msgs.msg import Float32
 
 
 class ArduinoComm(object):
-    def __init__(self):
+    def __init__(self, direction_pin=21):
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(direction_pin, GPIO.OUT)
+
         rospy.Subscriber('/ackermann_cmd', AckermannDrive, self.send_pwm, queue_size=1)
         rospy.Subscriber('/max_motor_vel', Float32, self.update_speed_bounds, queue_size=1)
 
-				# self.ser = serial.Serial('/dev/ttyUSB0', 9600)
         self.min_speed = -0.5
         self.max_speed = 0.5
         self.min_steering = math.radians(-45)
         self.max_steering = math.radians(45)
 
-        self.min_pwm_steering = 90
-        self.max_pwm_steering = 180
-        self.min_pwm_motor = -80
-        self.max_pwm_motor = 80
+        self.min_pwm_steering = 235  # goes 30 degrees left
+        self.max_pwm_steering = 490  # goes 30 degrees right
+
+        self.min_pwm_motor = -300
+        self.max_pwm_motor = 300
+        #self.min_pwm_motor = -2400  # correct
+        #self.max_pwm_motor = 2400  # correct
 
         self.pwm = Adafruit_PCA9685.PCA9685()
         self.pwm.set_pwm_freq(60)
+
+        self.prev_steer = 0
+        self.prev_motor = 0
+        self.direction_pin = direction_pin
 
     def update_speed_bounds(self, speed_msg):
         new_speed_bound = speed_msg.data
@@ -95,14 +104,20 @@ class ArduinoComm(object):
     def send_pwm(self, ackermann_msg):
         speed = ackermann_msg.speed
         steering_angle = ackermann_msg.steering_angle
+        speed_pwm = int(self.convert_speed_to_pwm(speed))
+        steering_pwm = int(self.convert_steering_to_pwm(steering_angle))
+        print (speed_pwm, steering_pwm)
 
-        speed_pwm = self.convert_speed_to_pwm(speed)
-        steering_pwm = self.convert_steering_to_pwm(steering_angle)
-
-        if abs(speed_pwm) > 20:
+        if True:
+        #if abs(speed_pwm) > 20:
             pwm_message = str(speed_pwm) + " " + str(steering_pwm) + "\n"
             self.set_motor_pulse(speed_pwm)
             self.set_steering_pulse(steering_pwm)
+            if speed_pwm < 0:
+                GPIO.output(self.direction_pin, 0)
+            else:
+                GPIO.output(self.direction_pin, 1)
+
             rospy.loginfo_throttle(30, "Motor_Comm: " + pwm_message)
         else:
             self.set_motor_pulse(0)
@@ -110,13 +125,14 @@ class ArduinoComm(object):
             rospy.loginfo_throttle(60, "Motor_Comm: Need to apply pwm to steer.")
 
     def set_steering_pulse(self, pwm_command):
-        self.pwm.set_pwm(0, 0, pwm_command)
+        self.pwm.set_pwm(0, 0, int(pwm_command))
+        self.prev_steer = pwm_command
 
     def set_motor_pulse(self, pwm_command):
-        self.pwm.set_pwm(1, 0, pwm_command)
+        self.pwm.set_pwm(1, 0, int(pwm_command))
 
 if __name__ == "__main__":
     rospy.init_node('motor_servo_comm')
-    node = ArduinoComm()
+    node = ArduinoComm(direction_pin=21)
     rospy.spin()
 
