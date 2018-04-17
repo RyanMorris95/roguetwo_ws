@@ -21,9 +21,22 @@ void PathPlanningNode::start_autonomous(std_msgs::Bool start)
 
 }
 
-void PathPlanningNode::update_se2(const roguetwo_perception::SE2 curr_se2)
+void PathPlanningNode::update_se2(const nav_msgs::Odometry odometry)
 {
-	se2 = curr_se2;
+	float x = odometry.pose.pose.position.x;
+	float y = odometry.pose.pose.position.y;
+	tf::Quaternion q(
+		odometry.pose.pose.orientation.x,
+		odometry.pose.pose.orientation.y,
+		odometry.pose.pose.orientation.z,
+		odometry.pose.pose.orientation.w);
+	tf::Matrix3x3 m(q);
+	double roll, pitch, yaw;
+	m.getRPY(roll, pitch, yaw);
+
+	se2.x = x;
+	se2.y = y;
+	se2.yaw = yaw;
 }
 
 void PathPlanningNode::update_obstacles(const nav_msgs::OccupancyGrid occupancy_grid)
@@ -104,7 +117,7 @@ int main(int argc, char** argv)
 	PathPlanningNode path_planning_node = PathPlanningNode();
 
 	path_planning_node.update_se2_sub = path_planning_node.nh.subscribe(
-		"/se2_state_filtered", 
+		"/encoder/odometry", 
 		1, 
 		&PathPlanningNode::update_se2, 
 		&path_planning_node);

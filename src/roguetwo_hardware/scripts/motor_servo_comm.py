@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 from __future__ import division
 
 import rospy
@@ -13,18 +12,20 @@ from ackermann_msgs.msg import AckermannDrive
 from std_msgs.msg import Float32
 
 
-class ArduinoComm(object):
+class MotorServoComm(object):
     def __init__(self, direction_pin=21):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(direction_pin, GPIO.OUT)
 
         rospy.Subscriber('/ackermann_cmd', AckermannDrive, self.send_pwm, queue_size=1)
         rospy.Subscriber('/max_motor_vel', Float32, self.update_speed_bounds, queue_size=1)
+        #rospy.Subscriber('/encoder/velocity', Float32, self.update_velocity, queue_size=1)
+        rospy.Subscriber('/encoder/odometry', Odometry, self.update_velocity, queue_size=1)
 
         self.min_speed = -0.5
         self.max_speed = 0.5
-        self.min_steering = math.radians(-45)
-        self.max_steering = math.radians(45)
+        self.min_steering = math.radians(-30)
+        self.max_steering = math.radians(30)
 
         self.min_pwm_steering = 235  # goes 30 degrees left
         self.max_pwm_steering = 490  # goes 30 degrees right
@@ -40,6 +41,48 @@ class ArduinoComm(object):
         self.prev_steer = 0
         self.prev_motor = 0
         self.direction_pin = direction_pin
+
+        # PID parameters
+        self.velocity = 0  # current velocity of robot, m/s
+        self.p = 500.0
+        self.i = 0.0
+        self.d = 0.0
+        self.last_error = 0.0
+        self.integral_sum = 0.0
+        self.yaw = 0
+
+
+    def pwm_pid(self, target_velocity):
+        error = self.target_velocity - self.velocity
+        p = kP * error
+        i = self.integral_sum + kI * error * dt
+        d = kD * (error - self.last_error) / dt
+
+        self.last_error = error
+        self.integral_sum = i
+
+        new_pwm = p + i + d 
+        if new_pwm > self.max_pwm_motor:
+            new_pwm = self.max_pwm_motor
+        elif new_pwm < self.min_pwm_motor:
+            new_pwm = self.min_pwm_motor
+
+        return new_pwm
+
+    def update_velocity(self, odometry_msg):
+        # geometry quaternion message
+        orientation = odometry_msg.pose.pose.orientation
+
+        # convert quaternion message to PyKDL quaternion
+        quaternion = PyKDL.Rotation.Quaternion(orientation.x, 
+                                                orientation.y, 
+                                                orientation.z, 
+                                                orientation.w)
+
+        self.yaw = quaternion.GetRPY()[2]
+
+        self.velocity = odometry_msg.twist.linear.x / math.cos(self.yaw)
+
 
     def update_speed_bounds(self, speed_msg):
         new_speed_bound = speed_msg.data
@@ -104,6 +147,7 @@ class ArduinoComm(object):
     def send_pwm(self, ackermann_msg):
         speed = ackermann_msg.speed
         steering_angle = ackermann_msg.steering_angle
+        #speed_pwm = int(self.pwm_pid(speed))
         speed_pwm = int(self.convert_speed_to_pwm(speed))
         steering_pwm = int(self.convert_steering_to_pwm(steering_angle))
         print (speed_pwm, steering_pwm)
@@ -133,6 +177,6 @@ class ArduinoComm(object):
 
 if __name__ == "__main__":
     rospy.init_node('motor_servo_comm')
-    node = ArduinoComm(direction_pin=21)
+    node = MotorServoComm(direction_pin=21)
     rospy.spin()
 

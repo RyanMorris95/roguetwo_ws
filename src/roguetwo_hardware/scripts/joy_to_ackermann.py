@@ -18,7 +18,7 @@ class JoyToAckermann(object):
         self.start_autonomous = False
         self.front_camera = True
         self.max_motor_vel = 0.5
-        self.max_steering_angle = math.radians(45)
+        self.max_steering_angle = math.radians(30)
         self.current_cmd_msg = None
 
         self.timer = rospy.Timer(rospy.Duration(0.1), self.publish_cmd)

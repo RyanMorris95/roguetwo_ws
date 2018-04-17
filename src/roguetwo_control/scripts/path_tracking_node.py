@@ -4,11 +4,14 @@ from __future__ import division
 import numpy as np
 import rospy
 import pure_pursuit
+import PyKDL
+import math
 
 from roguetwo_navigation.msg import Path
 from roguetwo_perception.msg import SE2
 from ackermann_msgs.msg import AckermannDrive
 from std_msgs.msg import Float32, Bool
+from nav_msgs.msg import Odometry
 
 
 class PathTrackingNode(object):
@@ -17,8 +20,9 @@ class PathTrackingNode(object):
     def __init__(self):
         # setup subscribers
         rospy.Subscriber('/local_path', Path, self.update_local_path, queue_size=1)
-        rospy.Subscriber('/se2_state_filtered', SE2, self.update_se2, queue_size=1)
-        rospy.Subscriber('/velocity', Float32, self.update_velocity, queue_size=1)
+        #rospy.Subscriber('/se2_state_filtered', SE2, self.update_se2, queue_size=1)
+        #rospy.Subscriber('/velocity', Float32, self.update_velocity, queue_size=1)
+        rospy.Subscriber('/encoder/odometry', Odometry, self.update_odometry, queue_size=1)
 
         self.x = 0
         self.y = 0
@@ -31,9 +35,25 @@ class PathTrackingNode(object):
         self.current_se2 = None
         self.path = None
         self.dt = 0.1
-        self.max_steering_angle = 0.35
+        self.max_steering_angle = math.radians(30)
 
         self.path_tracking_timer = rospy.Timer(rospy.Duration(self.dt), self.path_tracking)
+
+    def update_odometry(self, odometry):
+        pose = odometry.pose 
+        self.x = pose.pose.position.x 
+        self.y = pose.pose.position.y 
+        
+        orientation = odometry.orientation
+        quaternion = PyKDL.Rotation.Quaternion(orientation.x, 
+                                                orientation.y, 
+                                                orientation.z, 
+                                                orientation.w)
+
+        self.yaw = quaternion.GetRPY()[2]
+
+        # convert x velocity to local robot velocity
+        self.v = odometry.twist.linear.x / self.yaw
 
     def update_velocity(self, velocity):
         v = velocity.data
@@ -86,7 +106,7 @@ class PathTrackingNode(object):
 
                 print (self.state.v, di)
                 msg = AckermannDrive()
-                msg.speed = 0.5
+                msg.speed = self.state.v
                 msg.acceleration = 0.5
                 msg.jerk = 1.0
                 msg.steering_angle = di

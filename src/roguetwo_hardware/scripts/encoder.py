@@ -9,6 +9,7 @@ import math
 from std_msgs.msg import Float32, Header
 from sensor_msgs.msg import Imu
 from nav_msgs.msg import Odometry
+from geometry_msgs.msg import Twist
 
 
 
@@ -32,6 +33,7 @@ class RotaryEncoder(object):
         self.y = 0
         self.yaw = 0
         self.orientation = 0
+        self.prev_yaw = 0
 
         # initialize ros interface 
         self.distance_pub = rospy.Publisher("/encoder/distance", Float32, queue_size=1)
@@ -93,6 +95,12 @@ class RotaryEncoder(object):
             self.x += distance * math.cos(self.yaw)
             self.y += distance * math.sin(self.yaw)
 
+            # calculate velocity 
+            x_velocity = velocity * math.cos(self.yaw)
+            y_velocity = velocity * math.sin(self.yaw)
+            yaw_velocity = (self.prev_yaw - self.yaw) * seconds
+            self.prev_yaw = yaw
+
             # publish the data
             msg = Float32()
             msg.data = self.meters
@@ -109,6 +117,12 @@ class RotaryEncoder(object):
             odometry.pose.pose.position.x = self.x
             odometry.pose.pose.position.y = self.y
             odometry.pose.pose.orientation = self.orientation
+
+            twist = Twist()
+            twist.linear.x = x_velocity
+            twist.linear.y = y_velocity
+            odometry.twist = twist
+
             self.odometry_pub.publish(odometry) 
             
             if self.debug:

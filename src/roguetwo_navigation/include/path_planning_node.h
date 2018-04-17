@@ -5,7 +5,9 @@
 #include <nav_msgs/OccupancyGrid.h>
 #include <roguetwo_navigation/Path.h>
 #include <roguetwo_perception/SE2.h>
+#include <nav_msgs/Odometry.h>
 #include <math.h>
+#include <tf/transform_datatypes.h>
 
 #include "dynamic_window_planner.h"
 
@@ -16,7 +18,7 @@ public:
 
 	void start_autonomous(std_msgs::Bool start);
 	void update_obstacles(const nav_msgs::OccupancyGrid occuancy_grid);
-	void update_se2(const roguetwo_perception::SE2 curr_se2);
+	void update_se2(const nav_msgs::Odometry odometry);
 	void generate_dynamic_window_path(const ros::TimerEvent& event);
 
 	ros::NodeHandle nh;
