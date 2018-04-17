@@ -7,13 +7,15 @@ import math
 import time
 import Adafruit_PCA9685
 import RPi.GPIO as GPIO
+import PyKDL
 
 from ackermann_msgs.msg import AckermannDrive
 from std_msgs.msg import Float32
+from nav_msgs.msg import Odometry
 
 
 class MotorServoComm(object):
-    def __init__(self, direction_pin=21):
+    def __init__(self, direction_pin=21, motor_pin=0, steering_pin=0):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(direction_pin, GPIO.OUT)
 
@@ -41,22 +43,29 @@ class MotorServoComm(object):
         self.prev_steer = 0
         self.prev_motor = 0
         self.direction_pin = direction_pin
+        self.motor_pin = motor_pin
+        self.steering_pin = steering_pin
 
         # PID parameters
         self.velocity = 0  # current velocity of robot, m/s
-        self.p = 500.0
-        self.i = 0.0
-        self.d = 0.0
+        self.kP = 500.0
+        self.kI = 0.0
+        self.kD = 0.0
         self.last_error = 0.0
         self.integral_sum = 0.0
         self.yaw = 0
+        self.prev_time = 0
 
 
     def pwm_pid(self, target_velocity):
-        error = self.target_velocity - self.velocity
-        p = kP * error
-        i = self.integral_sum + kI * error * dt
-        d = kD * (error - self.last_error) / dt
+        curr_time = time.time()
+        dt = curr_time - self.prev_time
+        self.prev_time = curr_time
+
+        error = target_velocity - self.velocity
+        p = self.kP * error
+        i = self.integral_sum + self.kI * error * dt
+        d = self.kD * (error - self.last_error) / dt
 
         self.last_error = error
         self.integral_sum = i
@@ -169,14 +178,16 @@ class MotorServoComm(object):
             rospy.loginfo_throttle(60, "Motor_Comm: Need to apply pwm to steer.")
 
     def set_steering_pulse(self, pwm_command):
-        self.pwm.set_pwm(0, 0, int(pwm_command))
+        self.pwm.set_pwm(self.steering_pin, 0, int(pwm_command))
         self.prev_steer = pwm_command
 
     def set_motor_pulse(self, pwm_command):
-        self.pwm.set_pwm(1, 0, int(pwm_command))
+        self.pwm.set_pwm(self.motor_pin, 0, int(pwm_command))
 
 if __name__ == "__main__":
     rospy.init_node('motor_servo_comm')
-    node = MotorServoComm(direction_pin=21)
+    node = MotorServoComm(direction_pin=21, 
+                        motor_pin=4, 
+                        steering_pin=0)
     rospy.spin()
 

@@ -15,7 +15,7 @@ import tf2_ros
 
 class OdometryNode(object):
     # set publishers
-    pub_odom = rospy.Publisher('/odom', Odometry, queue_size=1)
+    pub_odom = rospy.Publisher('/encoder/odometry', Odometry, queue_size=1)
     #pub_se2 = rospy.Publisher('/se2_state', SE2, queue_size=1)
 
     def __init__(self):

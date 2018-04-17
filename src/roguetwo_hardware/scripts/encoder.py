@@ -44,16 +44,11 @@ class RotaryEncoder(object):
 
     def __del__(self):
         rospy.loginfo("encoder: shutting down encoder node.")
-        self.shutdown()
-    
-    def debug_test(self):
-        while True:
-            print (GPIO.input(pin))
-   
+        self.shutdown()   
 
     def update_yaw(self, imu_msg):
         # geometry quaternion message
-        self.orientation = imu_msg.orientation
+        orientation = imu_msg.orientation
 
         # convert quaternion message to PyKDL quaternion
         quaternion = PyKDL.Rotation.Quaternion(orientation.x, 
@@ -99,7 +94,7 @@ class RotaryEncoder(object):
             x_velocity = velocity * math.cos(self.yaw)
             y_velocity = velocity * math.sin(self.yaw)
             yaw_velocity = (self.prev_yaw - self.yaw) * seconds
-            self.prev_yaw = yaw
+            self.prev_yaw = self.yaw
 
             # publish the data
             msg = Float32()
