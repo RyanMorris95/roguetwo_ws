@@ -14,7 +14,7 @@ from geometry_msgs.msg import Twist
 
 
 class RotaryEncoder(object):
-    def __init__(self, m_per_revolution=0.05, pin=16, rate=10, debug=False):
+    def __init__(self, m_per_revolution=0.125, pin=16, rate=10, debug=False):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(pin, GPIO.IN)
         GPIO.add_event_detect(pin, GPIO.FALLING, callback=self.one_revolution)
@@ -26,7 +26,8 @@ class RotaryEncoder(object):
         self.counter = 0
         self.debug = debug
         self.rate = rate
-        self.last_time = 0
+        self.update_last_time = 0
+        self.counter_last_time = 0
         
         # robot position on a catesian global grid
         self.x = 0
@@ -59,7 +60,10 @@ class RotaryEncoder(object):
         self.yaw = quaternion.GetRPY()[2]
 
     def one_revolution(self, channel):
-        self.counter += 1
+        delta_time = time.time() - self.counter_last_time
+        if delta_time > 0.05:
+            self.counter += 1
+        self.counter_last_time = time.time()
 
     def calibrate(self):
         while not rospy.is_shutdown():
@@ -73,9 +77,9 @@ class RotaryEncoder(object):
             self.counter = 0
 
             # save off the last time interval and reset the timer
-            start_time = self.last_time
+            start_time = self.update_last_time
             end_time = time.time()
-            self.last_time = end_time
+            self.updatelast_time = end_time
 
             # calculate elapsed time and distance traveled
             seconds = end_time - start_time
@@ -136,7 +140,7 @@ class RotaryEncoder(object):
 
 if __name__ == '__main__':
     rospy.init_node("encoder")
-    node = RotaryEncoder(m_per_revolution=0.05, 
+    node = RotaryEncoder(m_per_revolution=0.125, 
                         pin=16, 
                         rate=10,
                         debug=True)

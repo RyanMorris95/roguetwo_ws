@@ -24,7 +24,7 @@ class MotorServoComm(object):
         #rospy.Subscriber('/encoder/velocity', Float32, self.update_velocity, queue_size=1)
         rospy.Subscriber('/encoder/odometry', Odometry, self.update_velocity, queue_size=1)
 
-        self.min_speed = -0.5
+        self.min_speed = 0.0
         self.max_speed = 0.5
         self.min_steering = math.radians(-30)
         self.max_steering = math.radians(30)
@@ -32,8 +32,8 @@ class MotorServoComm(object):
         self.min_pwm_steering = 235  # goes 30 degrees left
         self.max_pwm_steering = 490  # goes 30 degrees right
 
-        self.min_pwm_motor = -300
-        self.max_pwm_motor = 300
+        self.min_pwm_motor = 0
+        self.max_pwm_motor = 2000
         #self.min_pwm_motor = -2400  # correct
         #self.max_pwm_motor = 2400  # correct
 
@@ -157,16 +157,15 @@ class MotorServoComm(object):
         speed = ackermann_msg.speed
         steering_angle = ackermann_msg.steering_angle
         #speed_pwm = int(self.pwm_pid(speed))
-        speed_pwm = int(self.convert_speed_to_pwm(speed))
+        speed_pwm = int(self.convert_speed_to_pwm(abs(speed)))
         steering_pwm = int(self.convert_steering_to_pwm(steering_angle))
         print (speed_pwm, steering_pwm)
 
-        if True:
-        #if abs(speed_pwm) > 20:
+        if speed_pwm > 1000:
             pwm_message = str(speed_pwm) + " " + str(steering_pwm) + "\n"
             self.set_motor_pulse(speed_pwm)
             self.set_steering_pulse(steering_pwm)
-            if speed_pwm < 0:
+            if speed < 0:
                 GPIO.output(self.direction_pin, 0)
             else:
                 GPIO.output(self.direction_pin, 1)

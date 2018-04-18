@@ -1,54 +1,80 @@
 #!/usr/bin/env python
 import serial
 import time
-import RPi.GPIO as GPIO
 import rospy
 import sys, select, termios, tty
 import serial
 import numpy as np
+import argparse
 
 from sensor_msgs.msg import Range
 
+parser = argparse.ArgumentParser()
+parser.add_argument("node_name")
+parser.add_argument('-s', '--serial_device', default="")
+parser.add_argument('-p', '--publisher_name', default="")
 
 class Lidar(object):
-    def __init__(self, pin):
-        LEDpin = 11
+    def __init__(self, ser_device, pub):
+        self.ser = serial.Serial(ser_device,115200,timeout = 1)
+        self.distance = 0
+        self.distance_pub = rospy.Publisher(pub, Range, queue_size=1)
+        rospy.Timer(rospy.Duration(0.1), self.run_lidar)
 
-        GPIO.setmode(GPIO.BOARD)
-        GPIO.setwarnings(False)
-        GPIO.setup(LEDpin,GPIO.OUT)
-        GPIO.output(LEDpin,GPIO.LOW)
-
-        ser = serial.Serial('/dev/ttyAMA0',115200,timeout = 1)
-        Dist_Total = 0
-        Dist_L = 0
-        Dist_H = 0
-
-        distance = Range()
-
-        timer = rospy.Timer(rospy.Duration(0.1), self.run_lidar)
+    def __del__(self):
+        self.ser.close()
 
     def setup(self):
-        #ser.write(0x42)
-        ser.write(bytes(b'B'))
+        self.ser.write(bytes(b'B'))
+        self.ser.write(bytes(b'W'))
+        self.ser.write(bytes(2))
+        self.ser.write(bytes(0))
+        self.ser.write(bytes(0))
+        self.ser.write(bytes(0)) 
+        self.ser.write(bytes(1))  
+        self.ser.write(bytes(6))
 
-        #ser.write(0x57)
-        ser.write(bytes(b'W'))
+    def run_lidar(self):
+        if self.ser.in_waiting >= 9:
+            if (b'Y' == self.ser.read()) and ( b'Y' == self.ser.read()):
+                dist_l = self.ser.read()
+                dist_h = self.ser.read()
+                self.distance = (ord(dist_h) * 256) + (ord(dist_l))
+                for i in range (0,5):
+                    self.ser.read()
+            
+            distance_msg = Range()
+            distance_msg.range = float(self.distance)
+            print(self.distance)
+            self.distance_pub.publish(distance_msg)
 
-        #ser.write(0x02)
-        ser.write(bytes(2))
+            self.ser.flush()
 
-        #ser.write(0x00)
-        ser.write(bytes(0))
+if __name__=="__main__":
+    args = parser.parse_args()
 
-        #ser.write(0x00)
-        ser.write(bytes(0))
+    device_dict = {"lidar1": "/dev/ttyACMA0",
+                "lidar2": "/dev/ttyACAM1",
+                "lidar3": "/dev/ttyACMA2",
+                "lidar4": "/dev/ttyACMA3"}
+    
+    publisher_dict = {"lidar1": "/lidar_front_left",
+                    "lidar2": "/lidar_front_right",
+                    "lidar3": "/lidar_back_left",
+                    "lidar4": "/lidar_back_right"}
 
-        #ser.write(0x00)
-        ser.write(bytes(0))
-                
-        #ser.write(0x01)
-        ser.write(bytes(1))
-                
-        #ser.write(0x06)
-        ser.write(bytes(6))
+    rospy.init_node(args.node_name)
+
+    if args.serial_device:
+        serial_device = args.serial_device
+    else:
+        serial_device = device_dict[args.node_name]
+
+    if args.publisher_name:
+        publisher_name = args.publisher_name
+    else:
+        publisher_name = publisher_dict[args.node_name]
+
+    print (args.node_name, serial_device, publisher_name)
+    node = Lidar(serial_device, publisher_name)
+    rospy.spin()

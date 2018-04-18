@@ -87,7 +87,7 @@ void PathPlanningNode::generate_dynamic_window_path(const ros::TimerEvent& event
 
 	roguetwo_navigation::Path path_msg;
 
-	if (distance_from_goal < 1.0)
+	if (distance_from_goal < 0.5)
 	{
 		std::cout << "Finished!" << std::endl;
 		path_msg.x_states.push_back(-100);
@@ -117,7 +117,7 @@ int main(int argc, char** argv)
 	PathPlanningNode path_planning_node = PathPlanningNode();
 
 	path_planning_node.update_se2_sub = path_planning_node.nh.subscribe(
-		"/encoder/odometry", 
+		"/odometry/filtered", 
 		1, 
 		&PathPlanningNode::update_se2, 
 		&path_planning_node);

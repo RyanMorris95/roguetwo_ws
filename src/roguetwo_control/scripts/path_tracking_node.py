@@ -22,7 +22,8 @@ class PathTrackingNode(object):
         rospy.Subscriber('/local_path', Path, self.update_local_path, queue_size=1)
         #rospy.Subscriber('/se2_state_filtered', SE2, self.update_se2, queue_size=1)
         #rospy.Subscriber('/velocity', Float32, self.update_velocity, queue_size=1)
-        rospy.Subscriber('/encoder/odometry', Odometry, self.update_odometry, queue_size=1)
+        #rospy.Subscriber('/encoder/odometry', Odometry, self.update_odometry, queue_size=1)
+        rospy.Subscriber('/odometry/filtered', Odometry, self.update_odometry, queue_size=1)
 
         self.x = 0
         self.y = 0
@@ -44,7 +45,7 @@ class PathTrackingNode(object):
         self.x = pose.pose.position.x 
         self.y = pose.pose.position.y 
         
-        orientation = odometry.orientation
+        orientation = pose.pose.orientation
         quaternion = PyKDL.Rotation.Quaternion(orientation.x, 
                                                 orientation.y, 
                                                 orientation.z, 
@@ -53,7 +54,12 @@ class PathTrackingNode(object):
         self.yaw = quaternion.GetRPY()[2]
 
         # convert x velocity to local robot velocity
-        self.v = odometry.twist.linear.x / self.yaw
+        if self.yaw:
+            self.v = odometry.twist.twist.linear.x / self.yaw
+
+        self.state.x = self.x 
+        self.state.y = self.y 
+        self.state.yaw = self.yaw
 
     def update_velocity(self, velocity):
         v = velocity.data
@@ -82,7 +88,7 @@ class PathTrackingNode(object):
         rospy.signal_shutdown('Made it to goal')
 
     def path_tracking(self, event):
-        if self.current_se2 and self.path and self.state:
+        if self.path and self.state:
             if self.path.x_states[0] == -100:  # shutdown procedure
                 self.stop_vehicle()
             else:
@@ -104,7 +110,7 @@ class PathTrackingNode(object):
                 if self.state.v > self.target_speed:
                     self.state.v = self.target_speed
 
-                print (self.state.v, di)
+                rospy.loginfo("path_tracking_node: v: " + str(self.state.v) + " steering: " + str(di))
                 msg = AckermannDrive()
                 msg.speed = self.state.v
                 msg.acceleration = 0.5
