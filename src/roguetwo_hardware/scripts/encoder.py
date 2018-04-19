@@ -11,11 +11,12 @@ from sensor_msgs.msg import Imu
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
 from ackermann_msgs.msg import AckermannDrive
+from tf.transformations import quaternion_matrix, euler_from_matrix
 
 
 
 class RotaryEncoder(object):
-    def __init__(self, m_per_revolution=0.125, pin=16, rate=10, debug=False):
+    def __init__(self, m_per_revolution=0.111, pin=16, rate=10, debug=False):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(pin, GPIO.IN)
         GPIO.add_event_detect(pin, GPIO.FALLING, callback=self.one_revolution)
@@ -37,6 +38,12 @@ class RotaryEncoder(object):
         self.orientation = 0
         self.prev_yaw = 0
         self.velocity_cmd = 0
+
+        # tranformation matrix
+        self.initial_pose = None
+        self.relative_pose = None
+        self.rot_matrix = None
+        self.initial_rot_matrix = None
 
         # initialize ros interface 
         self.distance_pub = rospy.Publisher("/encoder/distance", Float32, queue_size=1)
@@ -63,6 +70,9 @@ class RotaryEncoder(object):
                                                 orientation.y, 
                                                 orientation.z, 
                                                 orientation.w)
+        #self.rot_matrix = quaternion_matrix([orientation.x, orientation.y, orientation.z, orientation.w])
+        #if not self.initial_rot_matrix:
+        #    self.initial_rot_matrix = self.rot_matrix
 
         self.yaw = quaternion.GetRPY()[2]
 
@@ -105,6 +115,13 @@ class RotaryEncoder(object):
             # update the robots global position on the grid
             self.x += distance * math.cos(self.yaw)
             self.y += distance * math.sin(self.yaw)
+
+            # find the relative rotation matrix
+            #relative_rot_matrix = np.dot(np.linalg.inv(self.rot_matrix), self.initial_rot_matrix)
+            
+            # find the current relative yaw
+            #ax, ay, az = euler_from_matrix(relative_rot_matrix)
+            #self.yaw = ay
 
             # calculate velocity 
             x_velocity = velocity * math.cos(self.yaw)

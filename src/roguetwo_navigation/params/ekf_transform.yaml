@@ -81,7 +81,7 @@ odom0: encoder/odometry
 # if unspecified, effectively making this parameter required for each sensor.
 odom0_config: [true,  true,  false,
                false, false, false,
-               true, true, false,
+               false, false, false,
                false, false, false,
                false, false, false]
 
@@ -102,7 +102,7 @@ odom0_nodelay: false
 # data is converted to velocity data by differentiating the absolute pose measurements. These velocities are then
 # integrated as usual. NOTE: this only applies to sensors that provide pose measurements; setting differential to true
 # for twist measurements has no effect.
-odom0_differential: false
+odom0_differential: true
 
 # [ADVANCED] When the node starts, if this parameter is true, then the first measurement is treated as a "zero point"
 # for all future measurements. While you can achieve the same effect with the differential paremeter, the key
@@ -129,7 +129,7 @@ imu0_config: [false,  false,  false,
 imu0_queue_size: 2
 imu0_nodelay: false
 imu0_differential: false
-imu0_relative: false
+imu0_relative: true
 imu0_pose_rejection_threshold: 5
 imu0_twist_rejection_threshold: 1
 

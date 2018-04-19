@@ -183,7 +183,7 @@ Point BuildLidarMap::calculate_point(
 void BuildLidarMap::lidar_front_left_callback(const sensor_msgs::Range::ConstPtr& range)
 {
     if ((range->max_range - range->range) > 0.5 &&
-        (range->range - range->min_range) > 0.5)
+        (range->range - range->min_range) > 0.8)
     {
         Point point = this->calculate_point(range->range, 
                                             this->lidar1_angle,
@@ -196,7 +196,7 @@ void BuildLidarMap::lidar_front_left_callback(const sensor_msgs::Range::ConstPtr
 void BuildLidarMap::lidar_front_right_callback(const sensor_msgs::Range::ConstPtr& range)
 {
     if ((range->max_range - range->range) > 0.5 &&
-        (range->range - range->min_range) > 0.5)
+        (range->range - range->min_range) > 0.8)
     {
         Point point = this->calculate_point(range->range, 
                                             this->lidar2_angle,
@@ -209,7 +209,7 @@ void BuildLidarMap::lidar_front_right_callback(const sensor_msgs::Range::ConstPt
 void BuildLidarMap::lidar_back_left_callback(const sensor_msgs::Range::ConstPtr& range)
 {
     if ((range->max_range - range->range) > 0.5 &&
-        (range->range - range->min_range) > 0.5)
+        (range->range - range->min_range) > 0.8)
     {
         Point point = this->calculate_point(range->range, 
                                             this->lidar3_angle,
@@ -222,7 +222,7 @@ void BuildLidarMap::lidar_back_left_callback(const sensor_msgs::Range::ConstPtr&
 void BuildLidarMap::lidar_back_right_callback(const sensor_msgs::Range::ConstPtr& range)
 {
     if ((range->max_range - range->range) > 0.5 &&
-        (range->range - range->min_range) > 0.5)
+        (range->range - range->min_range) > 0.8)
     {
         Point point = this->calculate_point(range->range, 
                                             this->lidar4_angle,

@@ -6,6 +6,7 @@ import rospy
 import pure_pursuit
 import PyKDL
 import math
+import stanley_controller
 
 from roguetwo_navigation.msg import Path
 from roguetwo_perception.msg import SE2
@@ -94,13 +95,18 @@ class PathTrackingNode(object):
             else:
                 cx = self.path.x_states
                 cy = self.path.y_states
-                self.target_index = pure_pursuit.calculate_target_index(self.state, cx, cy)
+                cyaw = self.path.yaw_states
+                #self.target_index = pure_pursuit.calculate_target_index(self.state, cx, cy)
+                target_index, mind = stanley_controller.calc_target_index(self.state, cx, cy)
 
                 ai = pure_pursuit.pid_control(self.target_speed, self.state.v)
-                di, self.target_index = pure_pursuit.pure_pursuit_control(self.state,
-                                                                          cx,
-                                                                          cy,
-                                                                          self.target_index)
+                #di, self.target_index = pure_pursuit.pure_pursuit_control(self.state,
+                #                                                          cx,
+                #                                                          cy,
+                #                                                          self.target_index)
+                di, target_index = stanley_controller.stanley_control(self.state, cx, cy, cyaw, target_index)
+                
+                print (self.state.v, di)
                 self.state.v = self.state.v + ai * self.dt
                 if di > self.max_steering_angle:
                     di = self.max_steering_angle

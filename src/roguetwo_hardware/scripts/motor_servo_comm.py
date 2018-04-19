@@ -29,7 +29,7 @@ class MotorServoComm(object):
         self.min_steering = math.radians(-30)
         self.max_steering = math.radians(30)
 
-        self.min_pwm_steering = 235  # goes 30 degrees left
+        self.min_pwm_steering = 150  # goes 30 degrees left
         self.max_pwm_steering = 490  # goes 30 degrees right
 
         self.min_pwm_motor = 0
@@ -156,12 +156,13 @@ class MotorServoComm(object):
     def send_pwm(self, ackermann_msg):
         speed = ackermann_msg.speed
         steering_angle = ackermann_msg.steering_angle
+        steering_angle *= -1
         #speed_pwm = int(self.pwm_pid(speed))
         speed_pwm = int(self.convert_speed_to_pwm(abs(speed)))
         steering_pwm = int(self.convert_steering_to_pwm(steering_angle))
         print (speed_pwm, steering_pwm)
 
-        if speed_pwm > 1000:
+        if True:
             pwm_message = str(speed_pwm) + " " + str(steering_pwm) + "\n"
             self.set_motor_pulse(speed_pwm)
             self.set_steering_pulse(steering_pwm)

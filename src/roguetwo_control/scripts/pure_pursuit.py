@@ -8,7 +8,7 @@ kP = 1.0  # speed propotional gain
 kI = 0.0  # speed integral gain
 kD = 0.0  # speed derivation gain
 dt = 0.1  # [s]
-L = 2.9  # [m] wheel base of vehicle
+L = 0.31  # [m] wheel base of vehicle
 
 global integral_sum, last_error
 integral_sum = 0

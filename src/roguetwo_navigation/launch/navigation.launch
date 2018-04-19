@@ -11,4 +11,8 @@
     <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se" clear_params="true">
         <rosparam command="load" file="$(find roguetwo_navigation)/params/ekf_transform.yaml" />
     </node>
+
+    <node pkg="tf" type="static_transform_publisher" name="world_broadcast"
+            args="1 0 0 0 0 0 1 world odom 100" />
+
 </launch>
