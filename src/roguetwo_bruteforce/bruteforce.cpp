@@ -331,7 +331,7 @@ int main(int argc, char** argv){
 				break;
 			}
 
-			printf("side\n");
+			//printf("side\n");
 
 			//if (i == 5)
 			//msg.steering_angle = direction ? 0.45 : -0.45;

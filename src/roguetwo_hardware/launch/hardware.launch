@@ -1,3 +1,2 @@
 <launch>
-    <node pkg="roguetwo_hardware" type="sensors" name="sensors" output="screen" />
 </launch>
