@@ -129,18 +129,18 @@ add_executable(path_planning_node src/path_planning_node.cpp
 				src/dynamic_window_planner.cpp)
 add_dependencies(path_planning_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-add_executable(sensor_fusion src/sensor_fusion.cpp
-				src/kalman_filter.cpp)
-add_dependencies(path_planning_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#add_executable(sensor_fusion src/sensor_fusion.cpp
+#				src/kalman_filter.cpp)
+#add_dependencies(path_planning_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 
 target_link_libraries(path_planning_node
    ${catkin_LIBRARIES}
 )
 
-target_link_libraries(sensor_fusion
-   ${catkin_LIBRARIES}
-)
+#target_link_libraries(sensor_fusion
+#   ${catkin_LIBRARIES}
+#)
 
 ## Specify libraries to link a library or executable target against
 # target_link_libraries(markers_to_pcl_node
