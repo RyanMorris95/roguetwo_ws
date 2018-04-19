@@ -7,7 +7,9 @@ python roguetwo_hardware/scripts/gps_comm.py &
 echo "started: gps_comm.py"
 python roguetwo_perception/scripts/gps_imu_to_se2.py &
 echo "started: gps_imu_to_se2.py"
-python roguetwo_hardware/scripts/lidar2.py lidar1 &
+python roguetwo_hardware/scripts/encoder.py &
+echo "started: encoder.py"
+#python roguetwo_hardware/scripts/lidar2.py lidar1 &
 #echo "started: lidar1 -> front_left"
 #python roguetwo_hardware/scripts/lidar2.py lidar2 &
 #echo "started: lidar2 -> front_front"

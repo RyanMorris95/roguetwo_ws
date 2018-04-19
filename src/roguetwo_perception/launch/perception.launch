@@ -1,4 +1,5 @@
 <launch>
+    <node pkg="roguetwo_perception" name="build_lidar_map" type="build_lidar_map" output="screen" />
 </launch>
 
 

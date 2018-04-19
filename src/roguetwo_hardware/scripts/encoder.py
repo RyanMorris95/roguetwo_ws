@@ -10,6 +10,7 @@ from std_msgs.msg import Float32, Header
 from sensor_msgs.msg import Imu
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
+from ackermann_msgs.msg import AckermannDrive
 
 
 
@@ -35,6 +36,7 @@ class RotaryEncoder(object):
         self.yaw = 0
         self.orientation = 0
         self.prev_yaw = 0
+        self.velocity_cmd = 0
 
         # initialize ros interface 
         self.distance_pub = rospy.Publisher("/encoder/distance", Float32, queue_size=1)
@@ -42,10 +44,15 @@ class RotaryEncoder(object):
         self.odometry_pub = rospy.Publisher("/encoder/odometry", Odometry, queue_size=1)
         rospy.Subscriber("/imu/data", Imu, self.update_yaw)
         rospy.Subscriber("/imu", Imu, self.update_yaw)
+        rospy.Subscriber("/ackermann_cmd", AckermannDrive, self.update_velocity_cmd)
 
     def __del__(self):
         rospy.loginfo("encoder: shutting down encoder node.")
         self.shutdown()   
+
+    def update_velocity_cmd(self, ackermann_msg):
+        self.velocity_cmd = ackermann_msg.speed
+
 
     def update_yaw(self, imu_msg):
         # geometry quaternion message
@@ -84,6 +91,11 @@ class RotaryEncoder(object):
             # calculate elapsed time and distance traveled
             seconds = end_time - start_time
             distance = revolutions * self.m_per_revolution
+
+            # make distance negative if negative speed commands
+            if self.velocity_cmd < 0:
+                distance *= -1
+                
             velocity = distance / seconds
 
             # update the odometry values
