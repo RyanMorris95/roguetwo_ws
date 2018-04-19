@@ -974,7 +974,7 @@ limitations under the License.
 
   <joint name="${name2}_joint" type="fixed">
     <axis xyz="0 1 0" />
-    <origin xyz="-.12 .21 0.15" rpy="0 0 0.7"/>
+    <origin xyz="-.12 .21 0.15" rpy="0 0 0.76"/>
     <parent link="chassis"/>
     <child link="${name2}_link"/>
   </joint>
@@ -1040,7 +1040,7 @@ limitations under the License.
 
   <joint name="${name3}_joint" type="fixed">
     <axis xyz="0 1 0" />
-     <origin xyz="-.12 -.21 0.15" rpy="0 0 -0.8"/>    
+     <origin xyz="-.12 -.21 0.15" rpy="0 0 -0.76"/>    
     <parent link="chassis"/>
     <child link="${name3}_link"/>
   </joint>

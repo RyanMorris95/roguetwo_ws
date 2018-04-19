@@ -9,7 +9,6 @@
 #include "tf2_msgs/TFMessage.h"
 #include "sensor_msgs/Range.h"
 #include <tf/transform_datatypes.h>
-#include "nav_msgs/Odometry.h"
 
 bool initial = true;
 bool direction = true;				
@@ -139,13 +138,16 @@ int main(int argc, char** argv){
 		ros::spinOnce();
 
 		if (initial){				
+			/*
+			if (X >= destX && Y >= destY) angle = Y >= X ? -M_PI/2 : M_PI;
 
-			//angle = atan2(destY - Y, destX - X);		//for destX and destY
+			else if (X <= destX && Y >= destY) angle = Y >= fabs(X) ? -M_PI/2 : 0;
 
-			angle = Yaw;								//testing going forward
+			else if (X <= destX && Y <= destY) angle = Y <= X ? M_PI/2 : 0;
 
-			//angle = M_PI;								//North
-			//angle = 0;									//South
+			else if (X >= destX && Y <= destY) angle = fabs(Y) >= X ? M_PI/2 : M_PI;
+			*/
+			angle = atan2(destY - Y, destX - X);
 			
 			angle = roundf(100 * angle) / 100;
 
