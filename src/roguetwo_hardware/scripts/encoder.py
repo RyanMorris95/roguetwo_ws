@@ -9,10 +9,9 @@ import math
 from std_msgs.msg import Float32, Header
 from sensor_msgs.msg import Imu
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import TwistWithCovariance, Point
 from ackermann_msgs.msg import AckermannDrive
 from tf.transformations import quaternion_matrix, euler_from_matrix
-
 
 
 class RotaryEncoder(object):
@@ -21,7 +20,6 @@ class RotaryEncoder(object):
         GPIO.setup(pin, GPIO.IN)
         GPIO.add_event_detect(pin, GPIO.FALLING, callback=self.one_revolution)
 
-        # initialize the odometry values
         self.m_per_revolution = m_per_revolution
         self.meters = 0  # robots local distance traveled
         self.meters_per_second = 0
@@ -35,7 +33,7 @@ class RotaryEncoder(object):
         self.x = 0
         self.y = 0
         self.yaw = 0
-        self.orientation = 0
+        self.orientation = None
         self.prev_yaw = 0
         self.velocity_cmd = 0
 
@@ -63,13 +61,13 @@ class RotaryEncoder(object):
 
     def update_yaw(self, imu_msg):
         # geometry quaternion message
-        orientation = imu_msg.orientation
+        self.orientation = imu_msg.orientation
 
         # convert quaternion message to PyKDL quaternion
-        quaternion = PyKDL.Rotation.Quaternion(orientation.x, 
-                                                orientation.y, 
-                                                orientation.z, 
-                                                orientation.w)
+        quaternion = PyKDL.Rotation.Quaternion(self.orientation.x, 
+                                                self.orientation.y, 
+                                                self.orientation.z, 
+                                                self.orientation.w)
         #self.rot_matrix = quaternion_matrix([orientation.x, orientation.y, orientation.z, orientation.w])
         #if not self.initial_rot_matrix:
         #    self.initial_rot_matrix = self.rot_matrix
@@ -142,13 +140,15 @@ class RotaryEncoder(object):
             header.frame_id = "odom"
             odometry.header = header
             odometry.child_frame_id = "base_link"
-            odometry.pose.pose.position.x = self.x
-            odometry.pose.pose.position.y = self.y
-            odometry.pose.pose.orientation = self.orientation
+    
+            if self.orientation:        
+                odometry.pose.pose.position.x = self.x
+                odometry.pose.pose.position.y = self.y
+                odometry.pose.pose.orientation = self.orientation
 
-            twist = Twist()
-            twist.linear.x = x_velocity
-            twist.linear.y = y_velocity
+            twist = TwistWithCovariance()
+            twist.twist.linear.x = x_velocity
+            twist.twist.linear.y = y_velocity
             odometry.twist = twist
 
             self.odometry_pub.publish(odometry) 

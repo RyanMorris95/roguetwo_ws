@@ -90,7 +90,7 @@ class JoyToAckermann(object):
         msg.speed = motor_velocity
         msg.acceleration = 1
         msg.jerk = 1
-        msg.steering_angle = steering_angle
+        msg.steering_angle = -1*steering_angle
         msg.steering_angle_velocity = 1
         self.current_cmd_msg = msg
         print (msg)

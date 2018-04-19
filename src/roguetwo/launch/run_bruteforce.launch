@@ -1,5 +1,5 @@
 <launch>
 	<include file="$(find roguetwo_hardware)/launch/hardware.launch" />
     <include file="$(find roguetwo_navigation)/launch/navigation.launch" />
-    <node pkg="roguetwo_bruteforce" name="bruteforce" type="bruteforce" output="screen"/>
+
 </launch>

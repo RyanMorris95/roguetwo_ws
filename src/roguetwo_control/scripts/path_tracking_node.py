@@ -23,8 +23,8 @@ class PathTrackingNode(object):
         rospy.Subscriber('/local_path', Path, self.update_local_path, queue_size=1)
         #rospy.Subscriber('/se2_state_filtered', SE2, self.update_se2, queue_size=1)
         #rospy.Subscriber('/velocity', Float32, self.update_velocity, queue_size=1)
-        #rospy.Subscriber('/encoder/odometry', Odometry, self.update_odometry, queue_size=1)
-        rospy.Subscriber('/odometry/filtered', Odometry, self.update_odometry, queue_size=1)
+        rospy.Subscriber('/encoder/odometry', Odometry, self.update_odometry, queue_size=1)
+        #rospy.Subscriber('/odometry/filtered', Odometry, self.update_odometry, queue_size=1)
 
         self.x = 0
         self.y = 0

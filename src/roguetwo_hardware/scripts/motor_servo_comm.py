@@ -90,7 +90,7 @@ class MotorServoComm(object):
 
         self.yaw = quaternion.GetRPY()[2]
 
-        self.velocity = odometry_msg.twist.linear.x / math.cos(self.yaw)
+        self.velocity = odometry_msg.twist.twist.linear.x / math.cos(self.yaw)
 
 
     def update_speed_bounds(self, speed_msg):
