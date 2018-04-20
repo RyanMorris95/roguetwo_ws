@@ -1,12 +1,4 @@
-"""
-
-Path tracking simulation with Stanley steering control and PID speed control.
-
-author: Atsushi Sakai (@Atsushi_twi)
-
-"""
 import sys
-sys.path.append("../../PathPlanning/CubicSpline/")
 
 import math
 import matplotlib.pyplot as plt

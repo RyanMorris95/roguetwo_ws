@@ -117,7 +117,7 @@ int main(int argc, char** argv)
 	PathPlanningNode path_planning_node = PathPlanningNode();
 
 	path_planning_node.update_se2_sub = path_planning_node.nh.subscribe(
-		"/odometry/filtered", 
+		"/encoder/odometry", 
 		1, 
 		&PathPlanningNode::update_se2, 
 		&path_planning_node);
