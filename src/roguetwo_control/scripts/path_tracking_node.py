@@ -118,7 +118,7 @@ class PathTrackingNode(object):
 
                 rospy.loginfo("path_tracking_node: v: " + str(self.state.v) + " steering: " + str(di))
                 msg = AckermannDrive()
-                msg.speed = self.state.v
+                msg.speed = 0.50
                 msg.acceleration = 0.5
                 msg.jerk = 1.0
                 msg.steering_angle = di

@@ -87,7 +87,7 @@ void PathPlanningNode::generate_dynamic_window_path(const ros::TimerEvent& event
 
 	roguetwo_navigation::Path path_msg;
 
-	if (distance_from_goal < 0.5)
+	if (distance_from_goal < 0.1)
 	{
 		std::cout << "Finished!" << std::endl;
 		path_msg.x_states.push_back(-100);

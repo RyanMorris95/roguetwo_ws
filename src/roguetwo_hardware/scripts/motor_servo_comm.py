@@ -29,8 +29,9 @@ class MotorServoComm(object):
         self.min_steering = math.radians(-30)
         self.max_steering = math.radians(30)
 
-        self.min_pwm_steering = 150  # goes 30 degrees left
-        self.max_pwm_steering = 490  # goes 30 degrees right
+        self.no_steering_pwm = 400
+        self.min_pwm_steering = 225  # goes 30 degrees left
+        self.max_pwm_steering = 700  # goes 30 degrees right
 
         self.min_pwm_motor = 0
         self.max_pwm_motor = 2000
@@ -160,12 +161,14 @@ class MotorServoComm(object):
         #speed_pwm = int(self.pwm_pid(speed))
         speed_pwm = int(self.convert_speed_to_pwm(abs(speed)))
         steering_pwm = int(self.convert_steering_to_pwm(steering_angle))
-        print (speed_pwm, steering_pwm)
 
         if True:
             pwm_message = str(speed_pwm) + " " + str(steering_pwm) + "\n"
             self.set_motor_pulse(speed_pwm)
-            self.set_steering_pulse(steering_pwm)
+            if (steering_angle != 0 and speed_pwm > 1000):
+                self.set_steering_pulse(steering_pwm)
+            else:
+                self.set_steering_pulse(self.no_steering_pwm)
             if speed < 0:
                 GPIO.output(self.direction_pin, 0)
             else:
@@ -174,7 +177,7 @@ class MotorServoComm(object):
             rospy.loginfo_throttle(30, "Motor_Comm: " + pwm_message)
         else:
             self.set_motor_pulse(0)
-            self.set_steering_pulse(0)
+            self.set_steering_pulse(self.no_steering_pwm)
             rospy.loginfo_throttle(60, "Motor_Comm: Need to apply pwm to steer.")
 
     def set_steering_pulse(self, pwm_command):

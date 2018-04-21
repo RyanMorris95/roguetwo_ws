@@ -1,7 +1,5 @@
 <launch>
-    <!--
     <node pkg="roguetwo_navigation" type="path_planning_node" name="path_planning_node" output="screen" />
-    -->
     <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform" clear_params="true">
         <rosparam command="load" file="$(find roguetwo_navigation)/params/navsat_transform.yaml" />
         <remap from="imu/data" to="imu/data"/>

@@ -1,7 +1,7 @@
 # The frequency, in Hz, at which the filter will output a position estimate. Note that the filter will not begin
 # computation until it receives at least one message from one of the inputs. It will then run continuously at the
 # frequency specified here, regardless of whether it receives more measurements. Defaults to 30 if unspecified.
-frequency: 30
+frequency: 50
 
 # The period, in seconds, after which we consider a sensor to have timed out. In this event, we carry out a predict
 # cycle on the EKF without correcting it. This parameter can be thought of as the minimum frequency with which the
@@ -108,7 +108,7 @@ odom0_differential: false
 # for all future measurements. While you can achieve the same effect with the differential paremeter, the key
 # difference is that the relative parameter doesn't cause the measurement to be converted to a velocity before
 # integrating it. If you simply want your measurements to start at 0 for a given sensor, set this to true.
-odom0_relative: true
+odom0_relative: false
 
 # [ADVANCED] If your data is subject to outliers, use these threshold settings, expressed as Mahalanobis distances, to
 # control how far away from the current vehicle state a sensor measurement is permitted to be. Each defaults to
@@ -121,15 +121,15 @@ odom0_twist_rejection_threshold: 1
 
 imu0: imu/data
 imu0_config: [false,  false,  false,
-              true, true, true,
+              false, false, true,
               false, false, false,
-              true, true, true,
-              true, true, true]
+              false, false, true,
+              true, true, false]
 
 imu0_queue_size: 10
 imu0_nodelay: false
 imu0_differential: false
-imu0_relative: true
+imu0_relative: false
 imu0_pose_rejection_threshold: 5
 imu0_twist_rejection_threshold: 1
 imu0_remove_gravitational_acceleration: true
