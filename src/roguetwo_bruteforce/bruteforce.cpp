@@ -153,23 +153,17 @@ int main(int argc, char** argv){
 
 		if (initial){				//fix this, needs to relate to destination, not 0
 
-			if (X >= destX && Y >= destY) angle = Y >= X ? -M_PI/2 : M_PI;
-
-			else if (X <= destX && Y >= destY) angle = Y >= fabs(X) ? -M_PI/2 : 0;
-
-			else if (X <= destX && Y <= destY) angle = Y <= X ? M_PI/2 : 0;
-
-			else if (X >= destX && Y <= destY) angle = fabs(Y) >= X ? M_PI/2 : M_PI;
+			angle = atan2(destY - Y, destX - X);
 
 			angle = roundf(100 * angle) / 100;
 
-			goal = angle == 3.14 || angle == 0;	//1 = Face Horizontal, 0 = Face vertical
+			//goal = angle == 3.14 || angle == 0;	//1 = Face Horizontal, 0 = Face vertical
 			
 			msg.steering_angle = 0.0;
 
-			if (goal) msg.steering_angle = X <= destX ? -0.30 : 0.30;
+			//if (goal) msg.steering_angle = X <= destX ? -0.30 : 0.30;
 
-			else if (!goal) msg.steering_angle = Y <= destY ? -0.30 : 0.30;
+			//else if (!goal) msg.steering_angle = Y <= destY ? -0.30 : 0.30;
 			
 
 			msg.speed = 1;
@@ -178,8 +172,8 @@ int main(int argc, char** argv){
 			initial = false;
 		}
 
-		if (finish) angle = atan2(destY - Y, destX - X);
-
+		angle = atan2(destY - Y, destX - X);
+		angle = roundf(100 * angle) / 100;
 			
 		if (angle >=0 && Yaw >= 0) direction = Yaw - angle > 0;
 
@@ -194,14 +188,14 @@ int main(int argc, char** argv){
 		//printf("L: %f\n", frontL);
 		//printf("R: %f\n", frontR);
 
-		//printf("angle: %f\n", angle);
+		printf("angle: %f      Yaw: %f\n", angle, Yaw);
 		//printf("Yaw: %f\n", Yaw);
 
 		//printf("L: %f\n", left);
 		//printf("R: %f\n", right);
 		//printf("B: %f\n", back);
 
-		printf("%d\n", goal);
+		//printf("%d\n", goal);
 
 		msg.speed = 1;
 		pub.publish(msg);
@@ -220,7 +214,7 @@ int main(int argc, char** argv){
 			//msg.steering_angle = msg.steering_angle < 0 ? 0.07 : -0.07;
 
 		}
-
+/*
 		if (!finish && ((goal && (X - 1.5 == destX || X + 1.5 == destX)) || (!goal && (Y - 1.5 == destY || Y + 1.5 == destY)))){
 
 			angle = atan2(destY - Y, destX - X);
@@ -244,7 +238,7 @@ int main(int argc, char** argv){
 			msg.steering_angle = direction ? -0.30 : 0.30;
 			pub.publish(msg);
 			ros::spinOnce();
-		}
+		}*/
 		
 		//ros::spinOnce();
 		//face = Yaw == angle;
@@ -278,7 +272,7 @@ int main(int argc, char** argv){
 
 			boxfront = true;
 			direction = 1;
-			msg.steering_angle = -0.40;
+			msg.steering_angle = -0.37;
 			ros::spinOnce();
 		}
 
@@ -286,7 +280,7 @@ int main(int argc, char** argv){
 
 			boxfront = true;
 			direction = 0;
-			msg.steering_angle = 0.40;
+			msg.steering_angle = 0.37;
 			ros::spinOnce();
 		}
 
@@ -296,7 +290,7 @@ int main(int argc, char** argv){
 		
 		while (boxfront && ros::ok()){
 
-			if (direction && left < 0.65 || !direction && right < 0.65) {
+			if (direction && left < 0.65 || !direction && right < 0.65 || i == 160000) {
 
 				boxfront = false;
 				boxside = true;
@@ -305,16 +299,19 @@ int main(int argc, char** argv){
 				msg.steering_angle = direction ? 0.45 : -0.45;
 	
 				pub.publish(msg);	
-				ros::spinOnce();			
+				ros::spinOnce();	
+				i = 0;		
 				break;
 			}
-
+			++i;
 			//printf("%d\n", direction);
 			pub.publish(msg);
 			ros::spinOnce();
 
 			//rate.sleep();
 		}
+
+		i = 0;
 
 		while (boxside && ros::ok()){
 
@@ -325,11 +322,22 @@ int main(int argc, char** argv){
 				break;
 			}
 
-			printf("side\n");
+			//printf("side\n");
 
 			//if (i == 5)
 			//msg.steering_angle = direction ? 0.45 : -0.45;
+			/*
+			if (i % 3 == 0 && !offcenter){
 
+				msg.steering_angle = msg.steering_angle < 0 ? msg.steering_angle + 0.07 : msg.steering_angle - 0.7;
+			}
+
+			else if (i % 4 == 0 && offcenter){
+
+				msg.steering_angle = msg.steering_angle < 0 ? msg.steering_angle + 0.1 : msg.steering_angle - 0.1;
+				offcenter = false;
+			}
+			*/
 			msg.speed = 1;
 	
 			pub.publish(msg);
@@ -338,6 +346,7 @@ int main(int argc, char** argv){
 
 			//rate.sleep();
 		}
+		i = 0;
 		/*
 		while (boxpass && ros::ok()){
 

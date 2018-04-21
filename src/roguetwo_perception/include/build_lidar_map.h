@@ -66,13 +66,15 @@ public:
     void lidar_back_left_callback(const sensor_msgs::Range::ConstPtr& range);
     void lidar_back_right_callback(const sensor_msgs::Range::ConstPtr& range);
     void odometry_callback(const nav_msgs::Odometry::ConstPtr& range);
-
+    void start_callback(const std_msgs::Bool::ConstPtr& start);
     void publish_map(const ros::TimerEvent& event);
     void update_map(const Point& point);
 
     Point calculate_point(const float distance,
                         const float angle,
                         const Point offset);
+
+    ros::NodeHandle nh;
 
 private:
     MatrixXd map;
@@ -103,6 +105,7 @@ private:
     Footprint footprint;
     SE2 curr_se2;
     
+    ros::Timer timer;
 };
 
 #endif

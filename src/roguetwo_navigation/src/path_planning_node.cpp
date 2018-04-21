@@ -1,6 +1,5 @@
 #include "path_planning_node.h"
 
-
 PathPlanningNode::PathPlanningNode()
 {
 	goal.x = 0;
@@ -50,9 +49,9 @@ void PathPlanningNode::update_obstacles(const nav_msgs::OccupancyGrid occupancy_
 			if (occupancy_grid.data[h * occupancy_grid.info.width + w] == 100)
 			{
 				double y = w * occupancy_grid.info.resolution + occupancy_grid.info.resolution / 2.0;
-				y += occupancy_grid.info.origin.position.x;
+				y -= occupancy_grid.info.origin.position.y;
 				double x = h * occupancy_grid.info.resolution + occupancy_grid.info.resolution / 2.0;
-				x += occupancy_grid.info.origin.position.y;
+				x -= occupancy_grid.info.origin.position.x;
 
 				Point obstacle;
 				obstacle.x = y;
@@ -87,7 +86,7 @@ void PathPlanningNode::generate_dynamic_window_path(const ros::TimerEvent& event
 
 	roguetwo_navigation::Path path_msg;
 
-	if (distance_from_goal < 0.1)
+	if (distance_from_goal < 0.5)
 	{
 		std::cout << "Finished!" << std::endl;
 		path_msg.x_states.push_back(-100);
@@ -122,11 +121,11 @@ int main(int argc, char** argv)
 		&PathPlanningNode::update_se2, 
 		&path_planning_node);
 
-	// path_planning_node.update_obstacles_sub = path_planning_node.nh.subscribe(
-	// 	"/projected_map",
-	// 	1,
-	// 	&PathPlanningNode::update_obstacles,
-	// 	&path_planning_node);
+	path_planning_node.update_obstacles_sub = path_planning_node.nh.subscribe(
+		"/occupancy_grid",
+		1,
+		&PathPlanningNode::update_obstacles,
+		&path_planning_node);
 
 	path_planning_node.start_autonomous_sub = path_planning_node.nh.subscribe(
 		"/start_autonomous",

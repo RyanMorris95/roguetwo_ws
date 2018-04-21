@@ -94,7 +94,7 @@ class RotaryEncoder(object):
             # save off the last time interval and reset the timer
             start_time = self.update_last_time
             end_time = time.time()
-            self.updatelast_time = end_time
+            self.update_last_time = end_time
 
             # calculate elapsed time and distance traveled
             seconds = end_time - start_time

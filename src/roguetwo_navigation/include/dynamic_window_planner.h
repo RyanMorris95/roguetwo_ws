@@ -67,7 +67,8 @@ public:
                                    const std::vector<Point>& obstacles);
 
     double calculate_to_goal_cost(std::vector<RobotState> trajectory,
-                                  Point goal);
+                                  Point goal,
+                                  RobotState curr_state);
 
     std::vector<RobotState> plan(RobotState robot_state,
                                 Controls controls,
