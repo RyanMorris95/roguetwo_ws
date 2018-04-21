@@ -23,7 +23,6 @@ class State:
 
 
 def update(state, a, delta):
-
     if delta >= max_steer:
         delta = max_steer
     elif delta <= -max_steer:
@@ -38,20 +37,18 @@ def update(state, a, delta):
     return state
 
 
-def PIDControl(target, current):
-    a = Kp * (target - current)
-
-    return a
-
-
 def stanley_control(state, cx, cy, cyaw, pind):
 
+    # get index of nearest point and find the cross track error
     ind, efa = calc_target_index(state, cx, cy)
 
     if pind >= ind:
         ind = pind
 
+    # keep the wheels aligned with the given path
     theta_e = pi_2_pi(cyaw[ind] - state.yaw)
+
+    # adjust the angle to intersect the path tangent
     theta_d = math.atan2(k * efa, state.v)
     delta = theta_e + theta_d
 

@@ -62,6 +62,11 @@ void BuildLidarMap::run()
 }
 
 
+// Turn the map into a occupancy grid message and publish
+// over ros.
+//
+// @param event: timer event that triggers this function
+// @return :
 void BuildLidarMap::publish_map(const ros::TimerEvent& event)
 {
     nav_msgs::OccupancyGrid occupancy_msg = nav_msgs::OccupancyGrid();
@@ -91,7 +96,11 @@ void BuildLidarMap::publish_map(const ros::TimerEvent& event)
     this->map_publisher.publish(occupancy_msg);
 }
 
-
+// Given a point update the map matrix with a 100
+// which represents an occupied cell.
+//
+// @param point: point struct
+// @return :
 void BuildLidarMap::update_map(const Point& point)
 {
     float x = point.x;
@@ -106,6 +115,12 @@ void BuildLidarMap::update_map(const Point& point)
 
 }
 
+// Updates the current SE2 pose of the robot.  Also,
+// updates the transformation matrix of the robot which
+// is used to project the points into the robot's frame.
+//
+// @param odometry: current ros odometry message
+// @return :
 void BuildLidarMap::odometry_callback(const nav_msgs::Odometry::ConstPtr& odometry)
 {
 	float x = odometry->pose.pose.position.x;
@@ -138,6 +153,14 @@ void BuildLidarMap::odometry_callback(const nav_msgs::Odometry::ConstPtr& odomet
                                   0, 0, 0, 1;
 }
 
+
+// Turn the lidar's distance reading into an x, y point 
+// and then into a point within the map frame.
+//
+// @param distance: lidar distance reading, m
+// @param angle: angle of lidar, rads
+// @param offset: x, y offset of lidar from robot's 0,0 , (m, m)
+// @return map_point: projected lidar point onto the map frame, (m, m)
 Point BuildLidarMap::calculate_point(
     const float distance,
     const float angle,

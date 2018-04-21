@@ -121,6 +121,15 @@ std::vector<RobotState> DynamicWindowPlanner::calculate_trajectory(
     return trajectory;
 }
 
+// Calculates the best trajectory by finding the trajectory 
+// with the lowest cost.
+// 
+// @param robot_state: current state of robot
+// @param controls: current controls of the robot
+// @param dynamic_window: the window of yaws and velocities considered
+// @param goal: x, y goal 
+// @param obstacles: vector of points representing obstacles
+// @return best_trajectory: vector of robot states to follow
 std::vector<RobotState> DynamicWindowPlanner::calculate_final_input(
         RobotState robot_state,
         Controls controls,
@@ -166,6 +175,13 @@ std::vector<RobotState> DynamicWindowPlanner::calculate_final_input(
     return best_trajectory;
 }
 
+// Loop through all the obstacles and make sure that 
+// the current trajectory isn't within the robot raidus
+// of an obstacle.
+//
+// @param trajectory: vector of robot states 
+// @param obstacles: vector of points representing obstacles
+// @return : cost of input trajectory
 double DynamicWindowPlanner::calculate_obstacle_cost(
         std::vector<RobotState> trajectory,
         const std::vector<Point>& obstacles)
@@ -201,6 +217,14 @@ double DynamicWindowPlanner::calculate_obstacle_cost(
 
 }
 
+// Find the cost of the trajectory to the goal by
+// scaling the eculidan distance to the goal point 
+// by the gain.
+//
+// @param trajectory: vector of robot states
+// @param goal: x, y point 
+// @param curr_state: current state of the robot
+// @return cost: scaled euclidean distance representing the cost
 double DynamicWindowPlanner::calculate_to_goal_cost(
         std::vector<RobotState> trajectory,
         Point goal,
@@ -220,6 +244,13 @@ double DynamicWindowPlanner::calculate_to_goal_cost(
     return cost;
 }
 
+// Top level function to run dynamic window path planner
+//
+// @param robot_state: current state of robot
+// @param controls: current controls of robot
+// @param goal: x, y goal point
+// @param obstacles: vector points representing obstacles
+// @return trajectory: lowest cost vector of robot states to follow
 std::vector<RobotState> DynamicWindowPlanner::plan(
         RobotState robot_state,
         Controls controls,

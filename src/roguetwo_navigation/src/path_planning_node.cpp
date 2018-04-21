@@ -7,6 +7,10 @@ PathPlanningNode::PathPlanningNode()
 	delta_time = 0.1;
 }
 
+// When autnomous mode is initiated start timer that 
+// continuously calls path planning.
+//
+// @param start: ros bool message
 void PathPlanningNode::start_autonomous(std_msgs::Bool start)
 {
 	goal.x = 0;
@@ -20,6 +24,10 @@ void PathPlanningNode::start_autonomous(std_msgs::Bool start)
 
 }
 
+// Updates the SE2 state of the robot based on the latest
+// odometry reading.
+//
+// @param odometry: latest ros odometry message
 void PathPlanningNode::update_se2(const nav_msgs::Odometry odometry)
 {
 	float x = odometry.pose.pose.position.x;
@@ -38,6 +46,9 @@ void PathPlanningNode::update_se2(const nav_msgs::Odometry odometry)
 	se2.yaw = yaw;
 }
 
+// Builds the obstacles vector from an occupancy grid.
+//
+// @param: latest ros occupancy grid message
 void PathPlanningNode::update_obstacles(const nav_msgs::OccupancyGrid occupancy_grid)
 {
 	obstacles.clear();
@@ -64,6 +75,9 @@ void PathPlanningNode::update_obstacles(const nav_msgs::OccupancyGrid occupancy_
 
 }
 
+// Runs dynamic path planning at every timer event.
+//
+// @param event: timer event
 void PathPlanningNode::generate_dynamic_window_path(const ros::TimerEvent& event)
 {
 

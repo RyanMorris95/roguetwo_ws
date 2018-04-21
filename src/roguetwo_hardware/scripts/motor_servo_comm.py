@@ -57,7 +57,6 @@ class MotorServoComm(object):
         self.yaw = 0
         self.prev_time = 0
 
-
     def pwm_pid(self, target_velocity):
         curr_time = time.time()
         dt = curr_time - self.prev_time
