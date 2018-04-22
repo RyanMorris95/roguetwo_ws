@@ -284,7 +284,7 @@ int main(int argc, char **argv)
 
     // remeber x is FORWARD and y is LEFT
 // Gazebo Setup
-#if 1
+#if 0
     Point lidar1_offset;
     lidar1_offset.x = 0.25;
     lidar1_offset.y = 0.15;
@@ -308,22 +308,22 @@ int main(int argc, char **argv)
 #endif
 
 // Robot Setup
-#if 0
+#if 1
     Point lidar1_offset;
-    lidar1_offset.x = 0.25;
-    lidar1_offset.y = 0.15;
+    lidar1_offset.x = 0.0;
+    lidar1_offset.y = 0.115;
 
     Point lidar2_offset;
-    lidar2_offset.x = 0.25;
-    lidar2_offset.y = -0.15;
+    lidar2_offset.x = 0.0;
+    lidar2_offset.y = -0.11;
 
     Point lidar3_offset;
-    lidar3_offset.x = -0.12;
-    lidar3_offset.y = 0.21;
+    lidar3_offset.x = -0.24;
+    lidar3_offset.y = 0.16;
 
     Point lidar4_offset;
-    lidar4_offset.x = -0.12;
-    lidar4_offset.y = -0.21;
+    lidar4_offset.x = -0.24;
+    lidar4_offset.y = -0.17;
 
     // dimensions of the robot
     Footprint robot_footprint;
