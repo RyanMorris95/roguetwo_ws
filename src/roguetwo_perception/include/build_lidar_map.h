@@ -79,7 +79,8 @@ public:
                         const Point offset);
     Point calculate_point2(const float distance,
                         const float angle,
-                        const Point offset);
+                        const Point offset,
+                        const int lidar_num);
 
     ros::NodeHandle nh;
 
@@ -102,6 +103,10 @@ private:
     float lidar4_angle;
 
     Matrix4f lidar1_robot_tf;
+    Matrix4f lidar2_robot_tf;
+    Matrix4f lidar3_robot_tf;
+    Matrix4f lidar4_robot_tf;
+
     Matrix4f robot_transformation;
 
     // x,y offset of lidar from front,center point of the car

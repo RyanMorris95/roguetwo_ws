@@ -106,7 +106,7 @@ class PlotSE2(object):
             plt.scatter(self.se2_x_ekf, self.se2_y_ekf, c='green', label='EKF', s=2)
             plt.scatter(self.x_states, self.y_states, c='blue', label='Path', s=1, alpha=0.3)
             if self.obstacles.all() and self.obstacles.shape[0] > 0:
-                plt.scatter(self.obstacles[:, 0], self.obstacles[:, 1], s=0.5)
+                plt.scatter(self.obstacles[:, 0], self.obstacles[:, 1])
             plt.arrow(self.se2_x[-1], self.se2_y[-1],
                         0.5 * math.cos(self.yaw),
                         0.5 * math.sin(self.yaw),
