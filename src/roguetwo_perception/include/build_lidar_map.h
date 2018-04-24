@@ -69,8 +69,15 @@ public:
     void start_callback(const std_msgs::Bool::ConstPtr& start);
     void publish_map(const ros::TimerEvent& event);
     void update_map(const Point& point);
+    bool is_between(const float min, const float max, const float curr);
+    bool difference_within(const float x1, const float x2, const float thresh);
+    Matrix3d get_rot(const float yaw);
+    Matrix4f get_tf(const Matrix3d r, const float x, const float y);
 
     Point calculate_point(const float distance,
+                        const float angle,
+                        const Point offset);
+    Point calculate_point2(const float distance,
                         const float angle,
                         const Point offset);
 
@@ -88,19 +95,26 @@ private:
     int origin_x;
     int origin_y;
 
-    Matrix4f robot_transformation;
-
     // the angle the lidar is turned at in relation to the vehicle
     float lidar1_angle;
     float lidar2_angle;
     float lidar3_angle;
     float lidar4_angle;
 
+    Matrix4f lidar1_robot_tf;
+    Matrix4f robot_transformation;
+
     // x,y offset of lidar from front,center point of the car
     Point lidar1_offset;
     Point lidar2_offset;
     Point lidar3_offset;
     Point lidar4_offset;
+
+    // previous lidar distances
+    float lidar1_prev_dist;
+    float lidar2_prev_dist;
+    float lidar3_prev_dist;
+    float lidar4_prev_dist;
 
     Footprint footprint;
     SE2 curr_se2;

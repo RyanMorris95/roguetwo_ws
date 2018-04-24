@@ -146,6 +146,12 @@ class RotaryEncoder(object):
                 odometry.pose.pose.position.y = self.y
                 odometry.pose.pose.orientation = self.orientation
 
+            covariance = [0]*36
+            covariance[0] = 0.1
+            covariance[1] = 0.1
+            covariance[5] = 0.00001
+            odometry.pose.covariance = covariance
+
             twist = TwistWithCovariance()
             twist.twist.linear.x = x_velocity
             twist.twist.linear.y = y_velocity
