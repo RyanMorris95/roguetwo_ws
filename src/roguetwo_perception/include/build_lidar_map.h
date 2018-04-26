@@ -54,7 +54,8 @@ public:
                 Point _lidar2_offset,
                 Point _lidar3_offset,
                 Point _lidar4_offset,
-                Footprint _footprint);
+                Footprint _footprint,
+                float _lidar1_height);
 
     ~BuildLidarMap();
     
@@ -71,6 +72,7 @@ public:
     void update_map(const Point& point);
     bool is_between(const float min, const float max, const float curr);
     bool difference_within(const float x1, const float x2, const float thresh);
+    bool ground_check(const float distance);
     Matrix3d get_rot(const float yaw);
     Matrix4f get_tf(const Matrix3d r, const float x, const float y);
 
@@ -109,7 +111,7 @@ private:
 
     Matrix4f robot_transformation;
 
-    // x,y offset of lidar from front,center point of the car
+    // x,y offset of lidar from front, center point of the car
     Point lidar1_offset;
     Point lidar2_offset;
     Point lidar3_offset;
@@ -121,8 +123,13 @@ private:
     float lidar3_prev_dist;
     float lidar4_prev_dist;
 
+    // lidar height off the ground
+    float lidar1_height_;
+
+
     Footprint footprint;
     SE2 curr_se2;
+    float curr_pitch_;
     
     ros::Timer timer;
 };
