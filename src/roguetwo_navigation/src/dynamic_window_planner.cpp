@@ -142,10 +142,12 @@ std::vector<RobotState> DynamicWindowPlanner::calculate_final_input(
     double obstacle_cost = 1.0;
 
 
+    #pragma omp parallel for
     for (double v = dynamic_window.y_min; 
         v <= dynamic_window.y_max; 
         v += velocity_resolution)
     {
+        #pragma omp parallel for
         for (double y = dynamic_window.yaw_rate_min; 
             y <= dynamic_window.yaw_rate_max;
             y += yaw_rate_resolution)
