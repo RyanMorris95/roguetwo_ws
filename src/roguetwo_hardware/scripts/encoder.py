@@ -140,12 +140,12 @@ class RotaryEncoder(object):
             header.frame_id = "odom"
             odometry.header = header
             odometry.child_frame_id = "base_link"
-    
-            if self.orientation:        
+   
+            if self.orientation:
                 odometry.pose.pose.position.x = self.x
                 odometry.pose.pose.position.y = self.y
                 odometry.pose.pose.orientation = self.orientation
-
+ 
             covariance = [0]*36
             covariance[0] = 0.1
             covariance[1] = 0.1
@@ -178,7 +178,7 @@ if __name__ == '__main__':
     node = RotaryEncoder(m_per_revolution=0.125, 
                         pin=16, 
                         rate=10,
-                        debug=True)
+                        debug=False)
     #node.debug_test()
     node.update()
     #node.calibrate()

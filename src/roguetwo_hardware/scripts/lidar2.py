@@ -18,6 +18,7 @@ class Lidar(object):
     def __init__(self, ser_device, pub):
         self.ser = serial.Serial(ser_device,115200,timeout = 1)
         self.distance = 0
+        self.strength = 0
         self.distance_pub = rospy.Publisher(pub, Range, queue_size=1)
         rospy.Timer(rospy.Duration(0.01), self.run_lidar)
 
@@ -40,12 +41,18 @@ class Lidar(object):
                 dist_l = self.ser.read()
                 dist_h = self.ser.read()
                 self.distance = (ord(dist_h) * 256) + (ord(dist_l))
-                for i in range (0,5):
+                strength_l = self.ser.read()
+                strength_h = self.ser.read()
+                self.strength = (ord(strength_h) * 256) + (ord(strength_l))
+                for i in range (0, 3):
                     self.ser.read()
             
             distance_msg = Range()
             distance_msg.range = float(self.distance) / 100
+            distance_msg.min_range = 0.30
+            distance_msg.max_range = 7.0
             self.distance_pub.publish(distance_msg)
+            print (self.distance, self.strength)
 
             self.ser.flush()
 
@@ -55,12 +62,12 @@ if __name__=="__main__":
     device_dict = {"lidar1": "/dev/ttyUSB0",
                 "lidar2": "/dev/ttyUSB1",
                 "lidar3": "/dev/ttyUSB2",
-                "lidar4": "/dev/ttyAMA0"}
+                "lidar4": "/dev/ttyUSB3"}
     
     publisher_dict = {"lidar1": "/lidar_front_left",
-                    "lidar2": "/lidar_front_right",
-                    "lidar3": "/lidar_back_left",
-                    "lidar4": "/lidar_back_right"}
+                    "lidar2": "/lidar_left",
+                    "lidar3": "/lidar_right",
+                    "lidar4": "/lidar_front_right"}
 
     rospy.init_node(args.node_name)
 
