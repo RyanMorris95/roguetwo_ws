@@ -42,7 +42,7 @@ int i = 0;
 
 std::string robot = "base_link";
 std::string test;
-
+/*
  void coords(const tf2_msgs::TFMessage::ConstPtr& msg){
 
  	test = msg->transforms[0].header.frame_id;
@@ -76,8 +76,8 @@ std::string test;
 
  		//printf("GOTO: %f, CURRENT: %f\n", angle, Yaw);
  	}
- }
-/*
+ }*/
+
 void coords(const nav_msgs::Odometry::ConstPtr& msg) {
 	X = msg->pose.pose.position.x;
 	Y = msg->pose.pose.position.y;
@@ -90,7 +90,7 @@ void coords(const nav_msgs::Odometry::ConstPtr& msg) {
 	tf::Matrix3x3 m(q);
 	double roll, pitch;
 	m.getRPY(roll, pitch, Yaw);
-}*/
+}
 
 void sens4(const sensor_msgs::Range::ConstPtr& msg){
 
@@ -128,22 +128,22 @@ int main(int argc, char** argv){
 	ros::init(argc, argv, "bruteforce");
 
 	ros::NodeHandle nh;
-	/*
+	
 	ros::Subscriber place = nh.subscribe("/odometry/filtered", 10, coords);
 	ros::Subscriber sensor4 = nh.subscribe("lidar_front_right", 10, sens4);
 	ros::Subscriber sensor0 = nh.subscribe("lidar_front_left", 10, sens0);
 	ros::Subscriber sensor1 = nh.subscribe("lidar_right", 10, sens1);
 	//ros::Subscriber sensor2 = nh.subscribe("sonar_back_distance", 10, sens2);
 	ros::Subscriber sensor3 = nh.subscribe("lidar_left", 10, sens3);
-	*/
 	
+	/*
 	ros::Subscriber place = nh.subscribe("tf", 10, coords);
 	ros::Subscriber sensor4 = nh.subscribe("sonar_frontR_distance", 10, sens4);
 	ros::Subscriber sensor0 = nh.subscribe("sonar_frontL_distance", 10, sens0);
 	ros::Subscriber sensor1 = nh.subscribe("sonar_right_distance", 10, sens1);
 	ros::Subscriber sensor2 = nh.subscribe("sonar_back_distance", 10, sens2);
 	ros::Subscriber sensor3 = nh.subscribe("sonar_left_distance", 10, sens3); 
-
+*/
 	ros::spinOnce();
 	//ros::spin();
 
