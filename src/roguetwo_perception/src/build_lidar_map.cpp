@@ -48,15 +48,20 @@ BuildLidarMap::BuildLidarMap(
     this->lidar3_prev_dist = 0;
     this->lidar4_prev_dist = 0;
 
+    this->robot_transformation << 1, 0, 0, 0,
+                                  0, 1, 0, 0,
+                                  0, 0, 1, 0,
+                                  0, 0, 0, 0;
+
     Matrix3d r; 
     r = this->get_rot(0);
-    // this->lidar1_robot_tf = this->get_tf(r, this->lidar1_offset.x, this->lidar1_offset.y);
-    // //r = this->get_rot(this->lidar2_angle);
-    // this->lidar2_robot_tf = this->get_tf(r, this->lidar2_offset.x, this->lidar2_offset.y);
-    // //r = this->get_rot(this->lidar3_angle);
-    // this->lidar3_robot_tf = this->get_tf(r, this->lidar3_offset.x, this->lidar3_offset.y);
-    // //r = this->get_rot(this->lidar4_angle);
-    // this->lidar4_robot_tf = this->get_tf(r, this->lidar4_offset.x, this->lidar4_offset.y);
+    this->lidar1_robot_tf = this->get_tf(r, this->lidar1_offset.x, this->lidar1_offset.y);
+    //r = this->get_rot(this->lidar2_angle);
+    this->lidar2_robot_tf = this->get_tf(r, this->lidar2_offset.x, this->lidar2_offset.y);
+    //r = this->get_rot(this->lidar3_angle);
+    this->lidar3_robot_tf = this->get_tf(r, this->lidar3_offset.x, this->lidar3_offset.y);
+    //r = this->get_rot(this->lidar4_angle);
+    this->lidar4_robot_tf = this->get_tf(r, this->lidar4_offset.x, this->lidar4_offset.y);
 
     std::cout << "Build Lidar Map Initialization Values: " << std::endl;
     std::cout << "Resolution: " << this->resolution << std::endl;
@@ -157,6 +162,11 @@ void BuildLidarMap::update_map(const Point& point)
 
     // make point x, y occupied in the map
     //this->map[x][y] = 100;
+    // if (x > this->rows) x = this->rows;
+    // else if (x < 0) x = 0;
+    
+    // if (y > this->cols) y = this->cols;
+    // else if (y > 0) y = 0;
     map(x, y) = 100;
 }
 
@@ -276,19 +286,19 @@ Point BuildLidarMap::calculate_point2(
           sensor_pose(1,0), sensor_pose(1,1), sensor_pose(1,2),
           sensor_pose(2,0), sensor_pose(2,1), sensor_pose(2,2);
     Vector3f ea = rot.eulerAngles(0, 1, 2);
-    float sensor_yaw = ea[2];
+    float sensor_yaw = ea[2]+lidar_angle;
 
     // get global x, y point from lidar distance reading
-    float x = (distance * cos(sensor_yaw+lidar_angle)) + sensor_pose(0,3);
-    float y = (distance * sin(sensor_yaw+lidar_angle)) + sensor_pose(1,3);
+    float x = (distance * cos(sensor_yaw)) + sensor_pose(0,3);
+    float y = (distance * sin(sensor_yaw)) + sensor_pose(1,3);
 
     Point map_point;
     map_point.x = x;
     map_point.y = y;
 
 #if 1
+    std::cout << "X:  " << x << "  Y:  " << y << std::endl;
     std::cout << "Distance: " << distance << std::endl;
-    std::cout << "Sensor Pose: " << sensor_pose << std::endl;
     std::cout << "Tr: " << this->robot_transformation << std::endl;
     std::cout << "Map Point: " << map_point.x << " " << map_point.y << std::endl;
     std::cout << "Sensor yaw: " << sensor_yaw << std::endl;
@@ -329,51 +339,60 @@ bool BuildLidarMap::difference_within(
 
 void BuildLidarMap::lidar_front_left_callback(const sensor_msgs::Range::ConstPtr& range)
 {
-    Point point = this->calculate_point2(range->range, 
-                                        this->lidar1_angle,
-                                        this->lidar1_offset,
-                                        1);
-    this->update_map(point);
+    if (range->range != 0)
+    {
+        Point point = this->calculate_point2(range->range, 
+                                            this->lidar1_angle,
+                                            this->lidar1_offset,
+                                            1);
+        this->update_map(point);
+    }
 }
 
 void BuildLidarMap::lidar_front_right_callback(const sensor_msgs::Range::ConstPtr& range)
 {
-    Point point = this->calculate_point2(range->range, 
-                                        this->lidar2_angle,
-                                        this->lidar2_offset,
-                                        1);
-    this->update_map(point);
+    if (range->range != 0)
+    {
+        Point point = this->calculate_point2(range->range, 
+                                            this->lidar2_angle,
+                                            this->lidar2_offset,
+                                            2);
+        this->update_map(point);
+    }
 }
 
 
 void BuildLidarMap::lidar_back_left_callback(const sensor_msgs::Range::ConstPtr& range)
 {
-    Point point = this->calculate_point2(range->range, 
-                                        this->lidar3_angle,
-                                        this->lidar3_offset,
-                                        1);
-    this->update_map(point);
+    if (range->range != 0)
+    {
+        Point point = this->calculate_point2(range->range, 
+                                            this->lidar3_angle,
+                                            this->lidar3_offset,
+                                            3);
+        this->update_map(point);
+    }
 }
 
 
 void BuildLidarMap::lidar_back_right_callback(const sensor_msgs::Range::ConstPtr& range)
 {
-    Point point = this->calculate_point2(range->range, 
-                                        this->lidar4_angle,
-                                        this->lidar4_offset,
-                                        1);
-    this->update_map(point);
+    if (range->range != 0)
+    {
+        Point point = this->calculate_point2(range->range, 
+                                            this->lidar4_angle,
+                                            this->lidar4_offset,
+                                            4);
+        this->update_map(point);
+    }
 }
 
 void BuildLidarMap::start_callback(const std_msgs::Bool::ConstPtr& start)
 {
     this->map = MatrixXd::Zero(this->rows, this->cols);
-
-    //this->map = std::vector<std::vector<int>>(this->rows, std::vector<int>(this->cols));
-    this->timer = this->nh.createTimer(ros::Duration(0.2),
-                                      &BuildLidarMap::publish_map, 
-                                       this);
 }
+
+
 
 bool BuildLidarMap::is_between(
     const float min,
@@ -431,7 +450,7 @@ int main(int argc, char **argv)
     int width = 20;
     float lidar1_angle = 0 * M_PI / 180;
     float lidar2_angle = 0 * M_PI / 180;
-    float lidar3_angle = 40 * M_PI / 180;
+    float lidar3_angle = 20 * M_PI / 180;
     float lidar4_angle = -20 * M_PI / 180;
 
     Point lidar1_offset;
@@ -509,26 +528,30 @@ int main(int argc, char **argv)
 #endif
 
 #if 1
-    // ros::Subscriber lidar_front_left_sub = build_lidar_map.nh.subscribe("/lidar_front_left_filtered", 
-    //                                     1,
-    //                                     &BuildLidarMap::lidar_front_left_callback,
-    //                                     build_lidar_map);
-    // ros::Subscriber lidar_front_right_sub = build_lidar_map.nh.subscribe("/lidar_front_right_filtered", 
-    //                                     1,
-    //                                     &BuildLidarMap::lidar_front_right_callback,
-    //                                     build_lidar_map);
+    ros::Subscriber lidar_front_left_sub = build_lidar_map.nh.subscribe("/lidar_front_left_filtered", 
+                                        1,
+                                        &BuildLidarMap::lidar_front_left_callback,
+                                        &build_lidar_map);
+    ros::Subscriber lidar_front_right_sub = build_lidar_map.nh.subscribe("/lidar_front_right_filtered", 
+                                        1,
+                                        &BuildLidarMap::lidar_front_right_callback,
+                                        &build_lidar_map);
     ros::Subscriber lidar_back_left_sub = build_lidar_map.nh.subscribe("/lidar_left_filtered", 
                                         1,
                                         &BuildLidarMap::lidar_back_left_callback,
                                         &build_lidar_map);
-    // ros::Subscriber lidar_back_right_sub = build_lidar_map.nh.subscribe("/lidar_right_filtered", 
-    //                                     1,
-    //                                     &BuildLidarMap::lidar_back_right_callback,
-    //                                     build_lidar_map);
+    ros::Subscriber lidar_back_right_sub = build_lidar_map.nh.subscribe("/lidar_right_filtered", 
+                                        1,
+                                        &BuildLidarMap::lidar_back_right_callback,
+                                        &build_lidar_map);
     ros::Subscriber start_sub = build_lidar_map.nh.subscribe("start_autonomous", 
                                         1,
                                         &BuildLidarMap::start_callback,
-                                        &build_lidar_map);        
+                                        &build_lidar_map);   
+
+    build_lidar_map.timer = build_lidar_map.nh.createTimer(ros::Duration(0.2),
+                                        &BuildLidarMap::publish_map, 
+                                        &build_lidar_map);     
 
 #endif 
 

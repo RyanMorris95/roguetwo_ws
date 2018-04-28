@@ -85,6 +85,7 @@ public:
                         const int lidar_num);
 
     ros::NodeHandle nh;
+    ros::Timer timer;
 
 private:
     MatrixXd map;
@@ -132,8 +133,6 @@ private:
     Footprint footprint;
     SE2 curr_se2;
     float curr_pitch_;
-    
-    ros::Timer timer;
 };
 
 #endif

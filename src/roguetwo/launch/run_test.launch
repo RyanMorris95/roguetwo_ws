@@ -1,0 +1,4 @@
+<launch>
+    <include file="$(find roguetwo_navigation)/launch/navigation.launch" />
+    <include file="$(find roguetwo_perception)/launch/perception.launch" />
+</launch>

@@ -8,6 +8,7 @@ import time
 import Adafruit_PCA9685
 import RPi.GPIO as GPIO
 import PyKDL
+import numpy as np
 
 from ackermann_msgs.msg import AckermannDrive
 from std_msgs.msg import Float32
@@ -167,14 +168,15 @@ class MotorServoComm(object):
             pwm_message = str(speed_pwm) + " " + str(steering_pwm) + "\n"
             self.set_motor_pulse(speed_pwm)
             #if (steering_angle != 0 and speed_pwm > 1000):
-            if (steering_angle != 0):
-                self.set_steering_pulse(steering_pwm)
-            else:
-                self.set_steering_pulse(self.no_steering_pwm)
             if speed < 0:
                 GPIO.output(self.direction_pin, 0)
             else:
                 GPIO.output(self.direction_pin, 1)
+
+            if (steering_angle != 0):
+                self.set_steering_pulse(steering_pwm)
+            else:
+                self.set_steering_pulse(self.no_steering_pwm)
 
             rospy.loginfo_throttle(30, "Motor_Comm: " + pwm_message)
         else:
@@ -183,6 +185,12 @@ class MotorServoComm(object):
             rospy.loginfo_throttle(60, "Motor_Comm: Need to apply pwm to steer.")
 
     def set_steering_pulse(self, pwm_command):
+        steering_inteval = np.arange(0, pwm_command, 10)
+        rate = rospy.Rate(100)
+        for steering_pwm in steering_inteval:
+            self.pwm.set_pwm(self.steering_pin, 0, int(steering_pwm))
+            rate.sleep()
+
         self.pwm.set_pwm(self.steering_pin, 0, int(pwm_command))
         self.prev_steer = pwm_command
 
