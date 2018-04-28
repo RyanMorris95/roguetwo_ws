@@ -211,7 +211,7 @@ int main(int argc, char** argv){
 
 		}
 
-		if (frontL >= 1.1 && frontR >= 1.1 && !face){
+		if (frontL >= 1.0 && frontR >= 1.0 && !face){
 
 			msg.steering_angle = direction ? -0.30 : 0.30;
 			msg.speed = 0.25;
@@ -228,7 +228,7 @@ int main(int argc, char** argv){
 			ros::spinOnce();
 		}
 
-		if (frontL < 1.1 && frontR < 1.1) {
+		if (frontL < 0.8 && frontR < 0.8) {
 
 			boxfront = true;
 			box = true;
@@ -241,7 +241,7 @@ int main(int argc, char** argv){
 			printf("\n\n\n\n\n\n	BOX		\n\n\n\n\n\n");
 		}
 
-		else if (frontL < 0.8 && frontR > 0.8){
+		else if (frontL < 0.6 && frontR > 0.6){
 
 			boxfront = true;
 			direction = 1;
@@ -252,7 +252,7 @@ int main(int argc, char** argv){
 			ros::spinOnce();
 		}
 
-		else if (frontR < 0.8 && frontL > 0.8){
+		else if (frontR < 0.6 && frontL > 0.6){
 
 			boxfront = true;
 			printf("\n\n\n\n\n\n		BOX\n\n\n\n\n\n");
@@ -268,7 +268,7 @@ int main(int argc, char** argv){
 		
 		while (boxfront && ros::ok()){
 
-			printf("tset1\n");
+			printf("Front\n");
 
 			if (direction && left < 0.65 || !direction && right < 0.65) {		//  || i == 160000
 
@@ -293,7 +293,7 @@ int main(int argc, char** argv){
 
 		while (boxside && ros::ok()){
 
-			printf("tset2\n");
+			printf("Side\n");
 
 			if (direction && left > 0.65 || !direction && right > 0.65) {
 
@@ -306,7 +306,7 @@ int main(int argc, char** argv){
 
 			//if (i == 5)
 			//msg.steering_angle = direction ? 0.45 : -0.45;
-			/*
+			
 			if (i % 3 == 0 && !offcenter){
 
 				msg.steering_angle = msg.steering_angle < 0 ? msg.steering_angle + 0.07 : msg.steering_angle - 0.7;
@@ -317,7 +317,7 @@ int main(int argc, char** argv){
 				msg.steering_angle = msg.steering_angle < 0 ? msg.steering_angle + 0.1 : msg.steering_angle - 0.1;
 				offcenter = false;
 			}
-			*/
+			
 			msg.speed = 0.25;
 	
 			pub.publish(msg);
@@ -331,7 +331,7 @@ int main(int argc, char** argv){
 	
 		while (fabs(X) <= 0.5  && fabs(Y) <= 0.5 && ros::ok()){
 
-			printf("tset3\n");
+			printf("Home\n");
 
 			printf("X: %f    Y: %f", X, Y);
 
