@@ -50,13 +50,13 @@ BuildLidarMap::BuildLidarMap(
 
     Matrix3d r; 
     r = this->get_rot(0);
-    this->lidar1_robot_tf = this->get_tf(r, this->lidar1_offset.x, this->lidar1_offset.y);
-    //r = this->get_rot(this->lidar2_angle);
-    this->lidar2_robot_tf = this->get_tf(r, this->lidar2_offset.x, this->lidar2_offset.y);
-    //r = this->get_rot(this->lidar3_angle);
-    this->lidar3_robot_tf = this->get_tf(r, this->lidar3_offset.x, this->lidar3_offset.y);
-    //r = this->get_rot(this->lidar4_angle);
-    this->lidar4_robot_tf = this->get_tf(r, this->lidar4_offset.x, this->lidar4_offset.y);
+    // this->lidar1_robot_tf = this->get_tf(r, this->lidar1_offset.x, this->lidar1_offset.y);
+    // //r = this->get_rot(this->lidar2_angle);
+    // this->lidar2_robot_tf = this->get_tf(r, this->lidar2_offset.x, this->lidar2_offset.y);
+    // //r = this->get_rot(this->lidar3_angle);
+    // this->lidar3_robot_tf = this->get_tf(r, this->lidar3_offset.x, this->lidar3_offset.y);
+    // //r = this->get_rot(this->lidar4_angle);
+    // this->lidar4_robot_tf = this->get_tf(r, this->lidar4_offset.x, this->lidar4_offset.y);
 
     std::cout << "Build Lidar Map Initialization Values: " << std::endl;
     std::cout << "Resolution: " << this->resolution << std::endl;
@@ -127,6 +127,11 @@ void BuildLidarMap::publish_map(const ros::TimerEvent& event)
 
     occupancy_msg.info = map_meta_data;
 
+    // for (int i = 0; i < this->rows; i++)
+    //     for (int j = 0; j < this->cols; j++)
+    //         occupancy_msg.data.push_back(this->map[i][j]);
+
+
     for (int i = 0; i < this->map.size(); i++)
     {
         occupancy_msg.data.push_back(*(this->map.data() + i));
@@ -151,8 +156,8 @@ void BuildLidarMap::update_map(const Point& point)
     y = int(y / this->resolution) + this->origin_y;
 
     // make point x, y occupied in the map
+    //this->map[x][y] = 100;
     map(x, y) = 100;
-
 }
 
 // Updates the current SE2 pose of the robot.  Also,
@@ -363,6 +368,8 @@ void BuildLidarMap::lidar_back_right_callback(const sensor_msgs::Range::ConstPtr
 void BuildLidarMap::start_callback(const std_msgs::Bool::ConstPtr& start)
 {
     this->map = MatrixXd::Zero(this->rows, this->cols);
+
+    //this->map = std::vector<std::vector<int>>(this->rows, std::vector<int>(this->cols));
     this->timer = this->nh.createTimer(ros::Duration(0.2),
                                       &BuildLidarMap::publish_map, 
                                        this);
@@ -451,7 +458,7 @@ int main(int argc, char **argv)
     float lidar1_height = 0.17; // m
 #endif
 
-    BuildLidarMap* build_lidar_map = new BuildLidarMap(resolution,
+    BuildLidarMap build_lidar_map = BuildLidarMap(resolution,
                                                     height,
                                                     width,
                                                     lidar1_angle,
@@ -465,68 +472,67 @@ int main(int argc, char **argv)
                                                     robot_footprint,
                                                     lidar1_height);
 
-    build_lidar_map->nh = ros::NodeHandle();
+    build_lidar_map.nh = ros::NodeHandle();
 
-    ros::Subscriber odometry_sub = build_lidar_map->nh.subscribe("/encoder/odometry", 
+    ros::Subscriber odometry_sub = build_lidar_map.nh.subscribe("/encoder/odometry", 
                                         1,
                                         &BuildLidarMap::odometry_callback,
-                                        build_lidar_map);
+                                        &build_lidar_map);
     
-    ros::Publisher map_publisher = build_lidar_map->nh.advertise<nav_msgs::OccupancyGrid>("/occupancy_grid", 1);
-    build_lidar_map->set_map_publisher(map_publisher);
+    ros::Publisher map_publisher = build_lidar_map.nh.advertise<nav_msgs::OccupancyGrid>("/occupancy_grid", 1);
+    build_lidar_map.set_map_publisher(map_publisher);
 
 #if 0
-    ros::Subscriber lidar_front_left_sub = build_lidar_map->nh.subscribe("/sonar_frontL_distance", 
+    ros::Subscriber lidar_front_left_sub = build_lidar_map.nh.subscribe("/sonar_frontL_distance", 
                                         1,
                                         &BuildLidarMap::lidar_front_left_callback,
                                         build_lidar_map);
-    ros::Subscriber lidar_front_right_sub = build_lidar_map->nh.subscribe("/sonar_frontR_distance", 
+    ros::Subscriber lidar_front_right_sub = build_lidar_map.nh.subscribe("/sonar_frontR_distance", 
                                         1,
                                         &BuildLidarMap::lidar_front_right_callback,
                                         build_lidar_map);
-    ros::Subscriber lidar_back_left_sub = build_lidar_map->nh.subscribe("/sonar_left_distance", 
+    ros::Subscriber lidar_back_left_sub = build_lidar_map.nh.subscribe("/sonar_left_distance", 
                                         1,
                                         &BuildLidarMap::lidar_back_left_callback,
                                         build_lidar_map);
-    ros::Subscriber lidar_back_right_sub = build_lidar_map->nh.subscribe("/sonar_right_distance", 
+    ros::Subscriber lidar_back_right_sub = build_lidar_map.nh.subscribe("/sonar_right_distance", 
                                         1,
                                         &BuildLidarMap::lidar_back_right_callback,
                                         build_lidar_map);
-    // ros::Timer timer = build_lidar_map->nh.createTimer(ros::Duration(0.2),
+    // ros::Timer timer = build_lidar_map.nh.createTimer(ros::Duration(0.2),
     //                                   &BuildLidarMap::publish_map, 
     //                                   build_lidar_map);
-    ros::Subscriber start_sub = build_lidar_map->nh.subscribe("start_autonomous", 
+    ros::Subscriber start_sub = build_lidar_map.nh.subscribe("start_autonomous", 
                                         1,
                                         &BuildLidarMap::start_callback,
                                         build_lidar_map);     
 #endif
 
 #if 1
-    // ros::Subscriber lidar_front_left_sub = build_lidar_map->nh.subscribe("/lidar_front_left_filtered", 
+    // ros::Subscriber lidar_front_left_sub = build_lidar_map.nh.subscribe("/lidar_front_left_filtered", 
     //                                     1,
     //                                     &BuildLidarMap::lidar_front_left_callback,
     //                                     build_lidar_map);
-    // ros::Subscriber lidar_front_right_sub = build_lidar_map->nh.subscribe("/lidar_front_right_filtered", 
+    // ros::Subscriber lidar_front_right_sub = build_lidar_map.nh.subscribe("/lidar_front_right_filtered", 
     //                                     1,
     //                                     &BuildLidarMap::lidar_front_right_callback,
     //                                     build_lidar_map);
-    ros::Subscriber lidar_back_left_sub = build_lidar_map->nh.subscribe("/lidar_left_filtered", 
+    ros::Subscriber lidar_back_left_sub = build_lidar_map.nh.subscribe("/lidar_left_filtered", 
                                         1,
                                         &BuildLidarMap::lidar_back_left_callback,
-                                        build_lidar_map);
-    // ros::Subscriber lidar_back_right_sub = build_lidar_map->nh.subscribe("/lidar_right_filtered", 
+                                        &build_lidar_map);
+    // ros::Subscriber lidar_back_right_sub = build_lidar_map.nh.subscribe("/lidar_right_filtered", 
     //                                     1,
     //                                     &BuildLidarMap::lidar_back_right_callback,
     //                                     build_lidar_map);
-    ros::Subscriber start_sub = build_lidar_map->nh.subscribe("start_autonomous", 
+    ros::Subscriber start_sub = build_lidar_map.nh.subscribe("start_autonomous", 
                                         1,
                                         &BuildLidarMap::start_callback,
-                                        build_lidar_map);        
+                                        &build_lidar_map);        
 
 #endif 
 
     ros::spin();
 
-    delete (build_lidar_map);
     return EXIT_SUCCESS;
 }

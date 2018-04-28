@@ -12,7 +12,7 @@
 #include <ros/ros.h>
 
 using namespace Eigen;
-typedef Matrix<int, Dynamic, Dynamic> MatriXd;
+typedef Matrix<int, Dynamic, Dynamic, Eigen::DontAlign> MatriXd;
 
 struct Point
 {
@@ -88,6 +88,8 @@ public:
 
 private:
     MatrixXd map;
+    //std::vector<std::vector<int>> map;
+
     ros::Publisher map_publisher;
 
     float resolution;
