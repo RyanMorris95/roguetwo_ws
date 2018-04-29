@@ -147,9 +147,9 @@ class RotaryEncoder(object):
                 odometry.pose.pose.orientation = self.orientation
  
             covariance = [0]*36
-            covariance[0] = 0.1
-            covariance[1] = 0.1
-            covariance[5] = 0.00001
+            covariance[0] = 0.001
+            covariance[1] = 0.2
+            covariance[5] = 0.001
             odometry.pose.covariance = covariance
 
             twist = TwistWithCovariance()
@@ -175,7 +175,7 @@ class RotaryEncoder(object):
 
 if __name__ == '__main__':
     rospy.init_node("encoder")
-    node = RotaryEncoder(m_per_revolution=0.125, 
+    node = RotaryEncoder(m_per_revolution=0.15, 
                         pin=16, 
                         rate=10,
                         debug=False)

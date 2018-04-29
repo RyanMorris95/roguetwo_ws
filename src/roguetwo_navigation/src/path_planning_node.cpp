@@ -14,7 +14,7 @@ PathPlanningNode::PathPlanningNode()
 void PathPlanningNode::start_autonomous(std_msgs::Bool start)
 {
 	goal.x = 0;
-	goal.y = 0;
+	goal.y = 2;
 	std::cout << "Starting autonmous mode." << std::endl;
 	timer = nh.createTimer(
 			ros::Duration(0.1), 

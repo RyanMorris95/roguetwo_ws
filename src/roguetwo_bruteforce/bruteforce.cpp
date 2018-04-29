@@ -23,6 +23,7 @@ bool boxpass = false;
 bool face = false;
 bool goal;
 bool finish = false;
+bool offcenter = false;
 //bool initialRotation = true;
 
 double X, Y, deltaY, deltaX;
@@ -131,12 +132,12 @@ int main(int argc, char** argv){
 
 	ros::NodeHandle nh;
 
-	ros::Subscriber place = nh.subscribe("/odometry/filtered", 10, coords);
-	ros::Subscriber sensor4 = nh.subscribe("lidar_front_right", 10, sens4);
-	ros::Subscriber sensor0 = nh.subscribe("lidar_front_left", 10, sens0);
-	ros::Subscriber sensor1 = nh.subscribe("lidar_right", 10, sens1);
+	ros::Subscriber place = nh.subscribe("/encoder/odometry", 10, coords);
+	ros::Subscriber sensor4 = nh.subscribe("lidar_front_right_filtered", 10, sens4);
+	ros::Subscriber sensor0 = nh.subscribe("lidar_front_left_filtered", 10, sens0);
+	ros::Subscriber sensor1 = nh.subscribe("lidar_right_filtered", 10, sens1);
 	//ros::Subscriber sensor2 = nh.subscribe("sonar_back_distance", 10, sens2);
-	ros::Subscriber sensor3 = nh.subscribe("lidar_left", 10, sens3);
+	ros::Subscriber sensor3 = nh.subscribe("lidar_left_filtered", 10, sens3);
 	ros::spinOnce();
 	//ros::spin();
 
@@ -145,7 +146,7 @@ int main(int argc, char** argv){
 
 	sleep(1);			//asefkjlha srklgdlrgjklearg i hate my life
 
-	//ros::Rate rate(10);
+	ros::Rate rate(10);
 
 	while(ros::ok()){
 
@@ -166,7 +167,7 @@ int main(int argc, char** argv){
 			//else if (!goal) msg.steering_angle = Y <= destY ? -0.30 : 0.30;
 			
 
-			msg.speed = 0.30;
+			msg.speed = 0.50;
 			pub.publish(msg);
 			//sleep(1);
 			initial = false;
@@ -188,7 +189,7 @@ int main(int argc, char** argv){
 		//printf("L: %f\n", frontL);
 		//printf("R: %f\n", frontR);
 
-		printf("angle: %f      Yaw: %f\n", angle, Yaw);
+		//printf("angle: %f      Yaw: %f\n", angle, Yaw);
 		//printf("Yaw: %f\n", Yaw);
 
 		//printf("L: %f\n", left);
@@ -197,7 +198,7 @@ int main(int argc, char** argv){
 
 		//printf("%d\n", goal);
 
-		msg.speed = 0.30;
+		msg.speed = 0.50;
 		pub.publish(msg);
 
 		ros::spinOnce(); 
@@ -247,50 +248,55 @@ int main(int argc, char** argv){
 		//ros::spinOnce();
 		//face = Yaw == angle;
 
-		if (frontL >= 1.1 && frontR >= 1.1 && !face){
+		if (frontL >= 0.8 && frontR >= 0.8 && !face){
 
 			msg.steering_angle = direction ? -0.30 : 0.30;
-			msg.speed = 0.25;
+			msg.speed = 0.50;
 			pub.publish(msg);
 			ros::spinOnce();
 		}
 
 		if (frontL < 0.4 && frontR < 0.4) {
 
-			msg.speed = -0.25;
+			msg.speed = -0.50;
 			msg.steering_angle = 0.0;
 			pub.publish(msg);
 			sleep(1);
 			ros::spinOnce();
 		}
 
-		if (frontL < 1.1 && frontR < 1.1) {
+		if (frontL < 0.8 && frontR < 0.8) {
 
 			boxfront = true;
 			box = true;
+			offcenter = false;
 			msg.steering_angle = direction ? -0.53 : 0.53;
-			msg.speed = 0.25;
+			msg.speed = 0.50;
 			pub.publish(msg);
 			ros::spinOnce();
 
-			printf("\n\n\n\n\n\nBOX\n\n\n\n\n\n");
+			printf("BOTH\n");
 		}
 
-		else if (frontL < 0.8 && frontR > 0.8){
+		else if (frontL < 0.6 && frontR > 0.6){
 
 			boxfront = true;
+			offcenter = true;
 			direction = 1;
 			msg.steering_angle = -0.37;
 			pub.publish(msg);
+			printf("LEFT\n");
 			ros::spinOnce();
 		}
 
-		else if (frontR < 0.8 && frontL > 0.8){
+		else if (frontR < 0.6 && frontL > 0.6){
 
 			boxfront = true;
+			offcenter = true;
 			direction = 0;
 			msg.steering_angle = 0.37;
 			pub.publish(msg);
+			printf("RIGHT\n");
 			ros::spinOnce();
 		}
 
@@ -310,7 +316,8 @@ int main(int argc, char** argv){
 	
 				pub.publish(msg);	
 				ros::spinOnce();	
-				i = 0;		
+				i = 0;
+				printf("LEAVE\n");		
 				break;
 			}
 			++i;
@@ -329,6 +336,7 @@ int main(int argc, char** argv){
 
 				boxpass = true;
 				boxside = false;
+				printf("LEAVE2\n");
 				break;
 			}
 
@@ -336,7 +344,7 @@ int main(int argc, char** argv){
 
 			//if (i == 5)
 			//msg.steering_angle = direction ? 0.45 : -0.45;
-			/*
+			
 			if (i % 3 == 0 && !offcenter){
 
 				msg.steering_angle = msg.steering_angle < 0 ? msg.steering_angle + 0.07 : msg.steering_angle - 0.7;
@@ -347,8 +355,8 @@ int main(int argc, char** argv){
 				msg.steering_angle = msg.steering_angle < 0 ? msg.steering_angle + 0.1 : msg.steering_angle - 0.1;
 				offcenter = false;
 			}
-			*/
-			msg.speed = 0.25;
+			
+			msg.speed = 0.50;
 	
 			pub.publish(msg);
 			ros::spinOnce();

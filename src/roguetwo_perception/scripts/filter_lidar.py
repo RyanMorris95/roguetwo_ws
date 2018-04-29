@@ -26,7 +26,7 @@ class Lidar(object):
 
 class FilterLidar(object):
     def __init__(self):
-        self.max_dist = 2.5
+        self.max_dist = 4.1
         self.min_dist = 0.5
 
         self.fl_lidar = Lidar(height=0.15)
@@ -51,7 +51,7 @@ class FilterLidar(object):
 
     def hit_ground(self, lidar):
         y_dist = lidar.dist * math.sin(self.curr_pitch + math.radians(lidar.pitch))
-        print ("y_dist traveled: ", y_dist)
+        print (y_dist)
         if y_dist < lidar.height and y_dist != 0:
             return False
         else:
@@ -73,9 +73,10 @@ class FilterLidar(object):
             lidar.reset()
             return lidar
 
-        # if self.hit_ground(lidar):
-        #     lidar.reset()
-        #     return lidar
+        if self.hit_ground(lidar):
+            pass
+            #lidar.reset()
+            #return lidar
 
         lidar.prev_dist = lidar.dist
 
@@ -83,14 +84,18 @@ class FilterLidar(object):
 
     def publish_lidar(self, event):
         filt_range_msg = Range()
-        filt_range_msg.range = self.fl_lidar.dist
-        self.fl_pub.publish(filt_range_msg)   
-        filt_range_msg.range = self.fr_lidar.dist
-        self.fr_pub.publish(filt_range_msg)
-        filt_range_msg.range = self.bl_lidar.dist
-        self.bl_pub.publish(filt_range_msg)
-        filt_range_msg.range = self.br_lidar.dist
-        self.br_pub.publish(filt_range_msg)      
+        if self.fl_lidar.dist < self.max_dist:
+            filt_range_msg.range = self.fl_lidar.dist
+            self.fl_pub.publish(filt_range_msg)   
+        if self.fr_lidar.dist < self.max_dist:
+            filt_range_msg.range = self.fr_lidar.dist
+            self.fr_pub.publish(filt_range_msg)
+        if self.bl_lidar.dist < self.max_dist:
+            filt_range_msg.range = self.bl_lidar.dist
+            self.bl_pub.publish(filt_range_msg)
+        if self.br_lidar.dist < self.max_dist:
+            filt_range_msg.range = self.br_lidar.dist
+            self.br_pub.publish(filt_range_msg)      
 
         self.fl_lidar.reset()
         self.fr_lidar.reset()
