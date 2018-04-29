@@ -90,6 +90,8 @@ public:
 
     void print_trajectory(std::vector<RobotState> trajectory);
 
+    double pi_2_pi(double yaw);
+
     Controls best_controls_;
 
 private:

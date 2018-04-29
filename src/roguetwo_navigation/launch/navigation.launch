@@ -8,8 +8,8 @@
         <param name="velocity_resolution" type="double" value="0.05" />
         <param name="yaw_rate_resolution" type="double" value="0.5" />
         <param name="delta_time" type="double" value="0.1" />
-        <param name="predict_time" type="double" value="4.0" />
-        <param name="to_goal_cost_gain" type="double" value="0.1" />
+        <param name="predict_time" type="double" value="3.0" />
+        <param name="to_goal_cost_gain" type="double" value="1.0" />
         <param name="speed_cost_gain" type="double" value="0.1" />
         <param name="robot_radius" type="double" value="0.62" />
     </node>

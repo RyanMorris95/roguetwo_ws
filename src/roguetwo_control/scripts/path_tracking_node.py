@@ -61,6 +61,7 @@ class PathTrackingNode(object):
         self.state.x = self.x 
         self.state.y = self.y 
         self.state.yaw = self.yaw
+        print ("Current yaw: ", self.yaw % (2 * np.pi))
 
     def update_velocity(self, velocity):
         v = velocity.data
@@ -96,6 +97,9 @@ class PathTrackingNode(object):
                 cx = self.path.x_states
                 cy = self.path.y_states
                 cyaw = self.path.yaw_states
+                # for i in range(len(cyaw)):
+                #     cyaw[i] -= math.radians(270)
+
                 #self.target_index = pure_pursuit.calculate_target_index(self.state, cx, cy)
                 target_index, mind = stanley_controller.calc_target_index(self.state, cx, cy)
 

@@ -3,9 +3,6 @@
 //
 #include "dynamic_window_planner.h"
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
 
 DynamicWindowPlanner::DynamicWindowPlanner()
 {
@@ -56,18 +53,27 @@ RobotState DynamicWindowPlanner::motion(
     Controls controls,
     double delta_time)
 {
-    robot_state.x += controls.velocity * cos(robot_state.yaw) * delta_time;
-    robot_state.y += controls.velocity * sin(robot_state.yaw) * delta_time;
-    // std::cout << "Added Y: " << controls.velocity * sin(robot_state.yaw) * delta_time << std::endl;
-    // std::cout << "Y: " << robot_state.y << std::endl;
-    // if (robot_state.yaw < 0)
-    //     robot_state.yaw += -1*controls.yaw_rate * delta_time;
-    // else
+    if (robot_state.yaw < 0)
+        robot_state.yaw += 270 * M_PI / 180.0;
+    robot_state.x += (controls.velocity * cos(robot_state.yaw)) * delta_time;
+    robot_state.y += (controls.velocity * sin(robot_state.yaw)) * delta_time;
     robot_state.yaw += controls.yaw_rate * delta_time;
     robot_state.velocity = controls.velocity;
     robot_state.yaw_rate = controls.yaw_rate;
 
     return robot_state;
+}
+
+double DynamicWindowPlanner::pi_2_pi(double yaw)
+{
+    double angle = yaw / M_PI * 180;
+    while (angle > M_PI)
+        angle = angle - 2.0 * M_PI;
+
+    while (angle < -M_PI)
+        angle = angle + 2.0 * M_PI;
+
+    return angle * M_PI / 180;
 }
 
 //  Calculates the dynamic window using the robot footprint
@@ -169,7 +175,7 @@ std::vector<RobotState> DynamicWindowPlanner::calculate_final_input(
 
             double speed_cost = speed_cost_gain * (max_speed - trajectory[-1].velocity);
 
-            obstacle_cost = 0.8 * calculate_obstacle_cost(trajectory, obstacles);
+            obstacle_cost = calculate_obstacle_cost(trajectory, obstacles);
 
             double final_cost = to_goal_cost + speed_cost + obstacle_cost;
 
@@ -184,13 +190,13 @@ std::vector<RobotState> DynamicWindowPlanner::calculate_final_input(
         }
     }
 
-    if (robot_state.yaw < 0)
-    {
-        for (int i = 0; i < best_trajectory.size(); i++)
-        {
-            best_trajectory[i].y *= -1;
-        }
-    }
+    // if (robot_state.yaw < 0)
+    // {
+    //     for (int i = 0; i < best_trajectory.size(); i++)
+    //     {
+    //         best_trajectory[i].y *= -1;
+    //     }
+    // }
 
     return best_trajectory;
 }

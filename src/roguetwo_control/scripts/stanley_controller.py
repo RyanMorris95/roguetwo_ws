@@ -4,11 +4,11 @@ import math
 import matplotlib.pyplot as plt
 
 
-k = 0.5  # control gain
+k = 0.9  # control gain
 Kp = 1.0  # speed propotional gain
 dt = 0.1  # [s] time difference
 L = 0.31  # [m] Wheel base of vehicle
-max_steer = math.radians(30.0)  # [rad] max steering angle
+max_steer = math.radians(35.0)  # [rad] max steering angle
 
 show_animation = True
 
