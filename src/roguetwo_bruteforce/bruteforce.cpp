@@ -301,7 +301,7 @@ int main(int argc, char** argv){
 		}
 
 		i = 0;
-
+		ros::Rate rate3(10);
 		while (boxside && ros::ok()){
 
 			printf("Side\n");
@@ -313,9 +313,13 @@ int main(int argc, char** argv){
 				break;
 			}
 
-			//printf("side\n");
+			if (i == 25){
 
-			//if (i == 5)
+				printf("TIMEOUT\n");
+				i = 0;
+				break;
+			}
+
 			//msg.steering_angle = direction ? 0.45 : -0.45;
 			
 			if (i % 3 == 0 && !offcenter){
@@ -335,7 +339,7 @@ int main(int argc, char** argv){
 			ros::spinOnce();
 			++i;
 
-			//rate.sleep();
+			rate3.sleep();
 		}
 		i = 0;
 
