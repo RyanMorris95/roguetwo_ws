@@ -20,7 +20,7 @@ class PathTrackingNode(object):
 
     def __init__(self):
         # setup subscribers
-        rospy.Subscriber('/local_path', Path, self.update_local_path, queue_size=1)
+        rospy.Subscriber('/path_planning_node/local_path', Path, self.update_local_path, queue_size=1)
         #rospy.Subscriber('/se2_state_filtered', SE2, self.update_se2, queue_size=1)
         #rospy.Subscriber('/velocity', Float32, self.update_velocity, queue_size=1)
         rospy.Subscriber('/encoder/odometry', Odometry, self.update_odometry, queue_size=1)

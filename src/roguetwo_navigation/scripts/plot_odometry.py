@@ -41,7 +41,7 @@ class PlotSE2(object):
 
         rospy.Subscriber("/encoder/odometry", Odometry, self.update_se2, queue_size=1)
         rospy.Subscriber("/odometry/filtered", Odometry, self.update_se2_ekf, queue_size=1)
-        rospy.Subscriber("/local_path", Path, self.update_path, queue_size=1)
+        rospy.Subscriber("/path_planning_node/local_path", Path, self.update_path, queue_size=1)
         rospy.Subscriber("/occupancy_grid", OccupancyGrid, self.update_grid, queue_size=1)
 
         rospy.Timer(rospy.Duration(0.1), self.plot)

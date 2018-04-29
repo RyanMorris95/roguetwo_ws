@@ -9,18 +9,39 @@
 
 DynamicWindowPlanner::DynamicWindowPlanner()
 {
-    max_speed = 0.50;
-    min_speed = -0.50;
-    max_yaw_rate = 45 * M_PI / 180.0;
-    max_acceleration = 1.0;
-    max_yaw_acceleration = 70 * M_PI / 180.0;
-    velocity_resolution = 0.05;
-    yaw_rate_resolution = 0.5 * M_PI / 180.0;
-    delta_time = 0.1;
-    predict_time = 4.0;
-    to_goal_cost_gain = 0.1;
-    speed_cost_gain = 0.1;
-    robot_radius = 0.31 * 2;
+
+}
+
+DynamicWindowPlanner::DynamicWindowPlanner(
+    double _max_speed,
+    double _min_speed,
+    double _max_yaw_rate,
+    double _max_acceleration,
+    double _max_yaw_acceleration,
+    double _velocity_resolution,
+    double _yaw_rate_resolution,
+    double _delta_time,
+    double _predict_time,
+    double _to_goal_cost_gain,
+    double _speed_cost_gain,
+    double _robot_radius
+)
+  : max_speed(_max_speed),
+    min_speed(_min_speed),
+    max_yaw_rate(_max_yaw_rate),
+    max_acceleration(_max_acceleration),
+    max_yaw_acceleration(_max_yaw_acceleration),
+    velocity_resolution(_velocity_resolution),
+    yaw_rate_resolution(_yaw_rate_resolution),
+    delta_time(_delta_time),
+    predict_time(_predict_time),
+    to_goal_cost_gain(_to_goal_cost_gain),
+    speed_cost_gain(_speed_cost_gain),
+    robot_radius(_robot_radius)
+{
+    max_yaw_rate = max_yaw_rate * M_PI / 180.0;
+    max_yaw_acceleration = max_yaw_acceleration * M_PI / 180.0;
+    yaw_rate_resolution = yaw_rate_resolution * M_PI / 180.0;
 }
 
 // Finds the next state of the robot based on the control inputs.
@@ -107,17 +128,6 @@ std::vector<RobotState> DynamicWindowPlanner::calculate_trajectory(
         time += delta_time;
     }
 
-    // if yaw is negative flip the y portion of the trajectory
-    // if (robot_state.yaw < 0)
-    // {
-    //     for (int i = 0; i < trajectory.size(); i++)
-    //     {
-    //         RobotState curr_state = trajectory[i];
-    //         curr_state.y *= -1;
-    //         trajectory[i] = curr_state;
-    //     }
-    // }
-
     return trajectory;
 }
 
@@ -137,7 +147,7 @@ std::vector<RobotState> DynamicWindowPlanner::calculate_final_input(
         Point goal,
         const std::vector<Point>& obstacles)
 {
-    double min_cost = 10000.0;
+    double min_cost = std::numeric_limits<double>::max();
     std::vector<RobotState> best_trajectory;
     double obstacle_cost = 1.0;
 
@@ -171,6 +181,14 @@ std::vector<RobotState> DynamicWindowPlanner::calculate_final_input(
                 best_controls_.yaw_rate = y;
                 best_trajectory = trajectory;
             }
+        }
+    }
+
+    if (robot_state.yaw < 0)
+    {
+        for (int i = 0; i < best_trajectory.size(); i++)
+        {
+            best_trajectory[i].y *= -1;
         }
     }
 
@@ -236,12 +254,6 @@ double DynamicWindowPlanner::calculate_to_goal_cost(
     double dy = goal.y - trajectory.back().y;
     double goal_distance = sqrt(pow(dx, 2) + pow(dy, 2));
     double cost = to_goal_cost_gain * goal_distance;
-
-    // if (trajectory[-1].yaw < && curr_state.yaw < 0)
-    // {
-    //     std::cout << "Yaw change not change. Drastically increasing cost. " << std::endl;
-    //     cost *= 1000;
-    // }
 
     return cost;
 }

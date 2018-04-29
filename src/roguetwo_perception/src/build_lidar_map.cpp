@@ -296,7 +296,7 @@ Point BuildLidarMap::calculate_point2(
     map_point.x = x;
     map_point.y = y;
 
-#if 1
+#if 0
     std::cout << "X:  " << x << "  Y:  " << y << std::endl;
     std::cout << "Distance: " << distance << std::endl;
     std::cout << "Tr: " << this->robot_transformation << std::endl;
@@ -412,7 +412,7 @@ int main(int argc, char **argv)
 
     // remeber x is FORWARD and y is LEFT
 // Gazebo Setup
-#if 0
+#if 1
     float resolution = 0.2;  // m
     int height = 20;
     int width = 20;
@@ -441,10 +441,12 @@ int main(int argc, char **argv)
     Footprint robot_footprint;
     robot_footprint.width = 0.18;  // m
     robot_footprint.height = 0.18;  // m
+
+    float lidar1_height = 0.17;
 #endif
 
 // Robot Setup
-#if 1
+#if 0
     float resolution = 0.2;  // m
     int height = 20;
     int width = 20;
@@ -501,33 +503,33 @@ int main(int argc, char **argv)
     ros::Publisher map_publisher = build_lidar_map.nh.advertise<nav_msgs::OccupancyGrid>("/occupancy_grid", 1);
     build_lidar_map.set_map_publisher(map_publisher);
 
-#if 0
+#if 1
     ros::Subscriber lidar_front_left_sub = build_lidar_map.nh.subscribe("/sonar_frontL_distance", 
                                         1,
                                         &BuildLidarMap::lidar_front_left_callback,
-                                        build_lidar_map);
+                                        &build_lidar_map);
     ros::Subscriber lidar_front_right_sub = build_lidar_map.nh.subscribe("/sonar_frontR_distance", 
                                         1,
                                         &BuildLidarMap::lidar_front_right_callback,
-                                        build_lidar_map);
+                                        &build_lidar_map);
     ros::Subscriber lidar_back_left_sub = build_lidar_map.nh.subscribe("/sonar_left_distance", 
                                         1,
                                         &BuildLidarMap::lidar_back_left_callback,
-                                        build_lidar_map);
+                                        &build_lidar_map);
     ros::Subscriber lidar_back_right_sub = build_lidar_map.nh.subscribe("/sonar_right_distance", 
                                         1,
                                         &BuildLidarMap::lidar_back_right_callback,
-                                        build_lidar_map);
-    // ros::Timer timer = build_lidar_map.nh.createTimer(ros::Duration(0.2),
-    //                                   &BuildLidarMap::publish_map, 
-    //                                   build_lidar_map);
+                                        &build_lidar_map);
+    ros::Timer timer = build_lidar_map.nh.createTimer(ros::Duration(0.2),
+                                      &BuildLidarMap::publish_map, 
+                                      &build_lidar_map);
     ros::Subscriber start_sub = build_lidar_map.nh.subscribe("start_autonomous", 
                                         1,
                                         &BuildLidarMap::start_callback,
-                                        build_lidar_map);     
+                                        &build_lidar_map);     
 #endif
 
-#if 1
+#if 0
     ros::Subscriber lidar_front_left_sub = build_lidar_map.nh.subscribe("/lidar_front_left_filtered", 
                                         1,
                                         &BuildLidarMap::lidar_front_left_callback,

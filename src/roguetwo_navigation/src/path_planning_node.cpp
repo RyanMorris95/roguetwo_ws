@@ -128,6 +128,51 @@ int main(int argc, char** argv)
 	ros::init(argc, argv, "path_planning_node");
 	std::cout << "Created path planning node" << std::endl;
 	PathPlanningNode path_planning_node = PathPlanningNode();
+	path_planning_node.nh = ros::NodeHandle("~");
+
+    double max_speed;
+    double min_speed;
+    double max_yaw_rate;
+    double max_acceleration;
+    double max_yaw_acceleration;
+    double velocity_resolution;
+    double yaw_rate_resolution;
+    double delta_time;
+    double predict_time;
+    double to_goal_cost_gain;
+    double speed_cost_gain;
+    double robot_radius;
+
+	path_planning_node.nh.getParam("max_speed", max_speed);
+	path_planning_node.nh.getParam("min_speed", min_speed);
+	path_planning_node.nh.getParam("max_yaw_rate", max_yaw_rate);
+	path_planning_node.nh.getParam("max_acceleration", max_acceleration);
+	path_planning_node.nh.getParam("max_yaw_acceleration", max_yaw_acceleration);
+	path_planning_node.nh.getParam("velocity_resolution", velocity_resolution);
+	path_planning_node.nh.getParam("yaw_rate_resolution", yaw_rate_resolution);
+	path_planning_node.nh.getParam("delta_time", delta_time);
+	path_planning_node.nh.getParam("predict_time", predict_time);
+	path_planning_node.nh.getParam("to_goal_cost_gain", to_goal_cost_gain);
+	path_planning_node.nh.getParam("speed_cost_gain", speed_cost_gain);
+	path_planning_node.nh.getParam("robot_radius", robot_radius);
+
+	std::cout << "Max speed: " << max_speed << std::endl;
+	std::cout << "yaw_rate_reso: " << yaw_rate_resolution << std::endl;
+	
+	DynamicWindowPlanner dynamic_window_planner = DynamicWindowPlanner(max_speed,
+																	min_speed,
+																	max_yaw_rate,
+																	max_acceleration,
+																	max_yaw_acceleration,
+																	velocity_resolution,
+																	yaw_rate_resolution,
+																	delta_time,
+																	predict_time,
+																	to_goal_cost_gain,
+																	speed_cost_gain,
+																	robot_radius);
+
+	path_planning_node.set_planner(dynamic_window_planner);
 
 	path_planning_node.update_se2_sub = path_planning_node.nh.subscribe(
 		"/encoder/odometry", 

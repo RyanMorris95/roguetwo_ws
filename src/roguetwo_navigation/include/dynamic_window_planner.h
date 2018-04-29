@@ -48,6 +48,19 @@ class DynamicWindowPlanner
 public:
     DynamicWindowPlanner();
 
+    DynamicWindowPlanner(double _max_speed,
+                         double _min_speed,
+                         double _max_yaw_rate,
+                         double _max_acceleration,
+                         double _max_yaw_acceleration,
+                         double _velocity_resolution,
+                         double _yaw_rate_resolution,
+                         double _delta_time,
+                         double _predict_time,
+                         double _to_goal_cost_gain,
+                         double _speed_cost_gain,
+                         double _robot_radius);
+
     RobotState motion(RobotState robot_state,
                         Controls controls,
                         double delta_time);

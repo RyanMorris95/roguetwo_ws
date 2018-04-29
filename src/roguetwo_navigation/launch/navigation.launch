@@ -1,5 +1,19 @@
 <launch>
-    <node pkg="roguetwo_navigation" type="path_planning_node" name="path_planning_node" output="screen" />
+    <node pkg="roguetwo_navigation" type="path_planning_node" name="path_planning_node" output="screen" >
+        <param name="max_speed" type="double" value="0.5" />
+        <param name="min_speed" type="double" value="-0.5" />
+        <param name="max_yaw_rate" type="double" value="45" />
+        <param name="max_acceleration" type="double" value="1.0" />
+        <param name="max_yaw_acceleration" type="double" value="70" />
+        <param name="velocity_resolution" type="double" value="0.05" />
+        <param name="yaw_rate_resolution" type="double" value="0.5" />
+        <param name="delta_time" type="double" value="0.1" />
+        <param name="predict_time" type="double" value="4.0" />
+        <param name="to_goal_cost_gain" type="double" value="0.1" />
+        <param name="speed_cost_gain" type="double" value="0.1" />
+        <param name="robot_radius" type="double" value="0.62" />
+    </node>
+
     <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se" clear_params="true">
         <rosparam command="load" file="$(find roguetwo_navigation)/params/ekf_transform.yaml" />
     </node>

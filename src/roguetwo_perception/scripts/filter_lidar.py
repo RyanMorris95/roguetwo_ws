@@ -31,8 +31,8 @@ class FilterLidar(object):
 
         self.fl_lidar = Lidar(height=0.15)
         self.fr_lidar = Lidar(height=0.15)
-        self.bl_lidar = Lidar(height=0.10, pitch=-10)
-        self.br_lidar = Lidar(height=0.10, pitch=-10)
+        self.bl_lidar = Lidar(height=0.15)
+        self.br_lidar = Lidar(height=0.15)
 
         self.curr_pitch = 0
 
@@ -42,9 +42,9 @@ class FilterLidar(object):
         self.br_pub = rospy.Publisher("/lidar_right_filtered", Range, queue_size=1)
 
         rospy.Subscriber("/lidar_front_left", Range, self.update_fl_lidar, queue_size=1)
-        #rospy.Subscriber("/lidar_front_right", Range, self.update_fr_lidar, queue_size=1)
-        #rospy.Subscriber("/lidar_left", Range, self.update_bl_lidar, queue_size=1)
-        #rospy.Subscriber("/lidar_right", Range, self.update_br_lidar, queue_size=1)
+        rospy.Subscriber("/lidar_front_right", Range, self.update_fr_lidar, queue_size=1)
+        rospy.Subscriber("/lidar_left", Range, self.update_bl_lidar, queue_size=1)
+        rospy.Subscriber("/lidar_right", Range, self.update_br_lidar, queue_size=1)
         rospy.Subscriber("/encoder/odometry", Odometry, self.update_odometry, queue_size=1)
 
         rospy.Timer(rospy.Duration(0.1), self.publish_lidar)
@@ -65,7 +65,7 @@ class FilterLidar(object):
 
     def update_lidar(self, lidar, pub, range_msg):
         lidar.dist = range_msg.range
-        if lidar.dist != 0 and lidar.dist ==lidar.prev_dist:
+        if lidar.dist > 10:
             lidar.reset()
             return lidar
 
@@ -73,12 +73,11 @@ class FilterLidar(object):
             lidar.reset()
             return lidar
 
-        if self.hit_ground(lidar):
-            lidar.reset()
-            return lidar
+        # if self.hit_ground(lidar):
+        #     lidar.reset()
+        #     return lidar
 
         lidar.prev_dist = lidar.dist
-        lidar.lidar_queue.append = lidar.dist 
 
         return lidar
 

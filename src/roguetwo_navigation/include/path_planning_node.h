@@ -20,6 +20,7 @@ public:
 	void update_obstacles(const nav_msgs::OccupancyGrid occuancy_grid);
 	void update_se2(const nav_msgs::Odometry odometry);
 	void generate_dynamic_window_path(const ros::TimerEvent& event);
+	void set_planner(DynamicWindowPlanner& planner) { dynamic_window_planner = planner; }
 
 	ros::NodeHandle nh;
 	ros::Subscriber update_se2_sub;
