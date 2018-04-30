@@ -185,12 +185,6 @@ class MotorServoComm(object):
             rospy.loginfo_throttle(60, "Motor_Comm: Need to apply pwm to steer.")
 
     def set_steering_pulse(self, pwm_command):
-        steering_inteval = np.arange(0, pwm_command, 10)
-        rate = rospy.Rate(100)
-        for steering_pwm in steering_inteval:
-            self.pwm.set_pwm(self.steering_pin, 0, int(steering_pwm))
-            rate.sleep()
-
         self.pwm.set_pwm(self.steering_pin, 0, int(pwm_command))
         self.prev_steer = pwm_command
 

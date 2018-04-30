@@ -452,8 +452,8 @@ int main(int argc, char **argv)
     int width = 20;
     float lidar1_angle = 0 * M_PI / 180;
     float lidar2_angle = 0 * M_PI / 180;
-    float lidar3_angle = 20 * M_PI / 180;
-    float lidar4_angle = -20 * M_PI / 180;
+    float lidar3_angle = 30 * M_PI / 180;
+    float lidar4_angle = -30 * M_PI / 180;
 
     Point lidar1_offset;
     lidar1_offset.x = 0.0;

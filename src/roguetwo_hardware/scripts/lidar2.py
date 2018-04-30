@@ -52,7 +52,6 @@ class Lidar(object):
             distance_msg.min_range = 0.30
             distance_msg.max_range = 7.0
             self.distance_pub.publish(distance_msg)
-            print (self.distance, self.strength)
 
             self.ser.flush()
 

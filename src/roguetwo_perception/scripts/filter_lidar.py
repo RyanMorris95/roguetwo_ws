@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 import rospy
-import numpy as np 
+import numpy as np
 import math
 import PyKDL
 import copy
 
 from nav_msgs.msg import Odometry
-from sensor_msgs.msg import Range 
+from sensor_msgs.msg import Range
 from collections import deque
 
 
@@ -51,11 +51,10 @@ class FilterLidar(object):
 
     def hit_ground(self, lidar):
         y_dist = lidar.dist * math.sin(self.curr_pitch + math.radians(lidar.pitch))
-        print (y_dist)
         if y_dist < lidar.height and y_dist != 0:
             return False
         else:
-            return True 
+            return True
 
     def between(self, min_dist, max_dist, dist):
         if min_dist < dist < max_dist:
@@ -73,10 +72,9 @@ class FilterLidar(object):
             lidar.reset()
             return lidar
 
-        if self.hit_ground(lidar):
-            pass
-            #lidar.reset()
-            #return lidar
+        #if self.hit_ground(lidar):
+        #    lidar.reset()
+        #    return lidar
 
         lidar.prev_dist = lidar.dist
 
@@ -86,7 +84,7 @@ class FilterLidar(object):
         filt_range_msg = Range()
         if self.fl_lidar.dist < self.max_dist:
             filt_range_msg.range = self.fl_lidar.dist
-            self.fl_pub.publish(filt_range_msg)   
+            self.fl_pub.publish(filt_range_msg)
         if self.fr_lidar.dist < self.max_dist:
             filt_range_msg.range = self.fr_lidar.dist
             self.fr_pub.publish(filt_range_msg)
@@ -95,16 +93,16 @@ class FilterLidar(object):
             self.bl_pub.publish(filt_range_msg)
         if self.br_lidar.dist < self.max_dist:
             filt_range_msg.range = self.br_lidar.dist
-            self.br_pub.publish(filt_range_msg)      
+            self.br_pub.publish(filt_range_msg)
 
         self.fl_lidar.reset()
         self.fr_lidar.reset()
         self.bl_lidar.reset()
         self.br_lidar.reset()
-        
+
     def update_fl_lidar(self, range_msg):
         self.fl_lidar = self.update_lidar(self.fl_lidar, self.fl_pub, range_msg)
-        
+
     def update_fr_lidar(self, range_msg):
         self.fr_lidar = self.update_lidar(self.fr_lidar, self.fr_pub, range_msg)
 
@@ -115,12 +113,12 @@ class FilterLidar(object):
         self.br_lidar = self.update_lidar(self.br_lidar, self.br_pub, range_msg)
 
     def update_odometry(self, odometry_msg):
-        pose = odometry_msg.pose 
-        
+        pose = odometry_msg.pose
+
         orientation = pose.pose.orientation
-        quaternion = PyKDL.Rotation.Quaternion(orientation.x, 
-                                                orientation.y, 
-                                                orientation.z, 
+        quaternion = PyKDL.Rotation.Quaternion(orientation.x,
+                                                orientation.y,
+                                                orientation.z,
                                                 orientation.w)
 
         self.curr_pitch = quaternion.GetRPY()[1]
@@ -130,4 +128,4 @@ if __name__=="__main__":
     rospy.init_node("filter_lidar")
     node = FilterLidar()
     rospy.spin()
-        
+

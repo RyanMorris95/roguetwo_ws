@@ -14,7 +14,7 @@ PathPlanningNode::PathPlanningNode()
 void PathPlanningNode::start_autonomous(std_msgs::Bool start)
 {
 	goal.x = 0;
-	goal.y = 0;
+	goal.y = 2;
 	std::cout << "Starting autonmous mode." << std::endl;
 	timer = nh.createTimer(
 			ros::Duration(0.1), 
@@ -158,7 +158,7 @@ int main(int argc, char** argv)
     double predict_time;
     double to_goal_cost_gain;
     double speed_cost_gain;
-	double obstacle_cost_gain;
+    double obstacle_cost_gain;
     double robot_radius;
 
 	path_planning_node.nh.getParam("max_speed", max_speed);
