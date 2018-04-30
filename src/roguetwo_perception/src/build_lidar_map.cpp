@@ -412,7 +412,7 @@ int main(int argc, char **argv)
 
     // remeber x is FORWARD and y is LEFT
 // Gazebo Setup
-#if 1
+#if 0
     float resolution = 0.2;  // m
     int height = 20;
     int width = 20;
@@ -446,7 +446,7 @@ int main(int argc, char **argv)
 #endif
 
 // Robot Setup
-#if 0
+#if 1
     float resolution = 0.2;  // m
     int height = 20;
     int width = 20;
@@ -503,7 +503,7 @@ int main(int argc, char **argv)
     ros::Publisher map_publisher = build_lidar_map.nh.advertise<nav_msgs::OccupancyGrid>("/occupancy_grid", 1);
     build_lidar_map.set_map_publisher(map_publisher);
 
-#if 1
+#if 0
     ros::Subscriber lidar_front_left_sub = build_lidar_map.nh.subscribe("/sonar_frontL_distance", 
                                         1,
                                         &BuildLidarMap::lidar_front_left_callback,
@@ -529,7 +529,7 @@ int main(int argc, char **argv)
                                         &build_lidar_map);     
 #endif
 
-#if 0
+#if 1
     ros::Subscriber lidar_front_left_sub = build_lidar_map.nh.subscribe("/lidar_front_left_filtered", 
                                         1,
                                         &BuildLidarMap::lidar_front_left_callback,

@@ -21,6 +21,7 @@ DynamicWindowPlanner::DynamicWindowPlanner(
     double _predict_time,
     double _to_goal_cost_gain,
     double _speed_cost_gain,
+    double _obstacle_cost_gain,
     double _robot_radius
 )
   : max_speed(_max_speed),
@@ -34,6 +35,7 @@ DynamicWindowPlanner::DynamicWindowPlanner(
     predict_time(_predict_time),
     to_goal_cost_gain(_to_goal_cost_gain),
     speed_cost_gain(_speed_cost_gain),
+    obstacle_cost_gain(_obstacle_cost_gain),
     robot_radius(_robot_radius)
 {
     max_yaw_rate = max_yaw_rate * M_PI / 180.0;
@@ -53,8 +55,6 @@ RobotState DynamicWindowPlanner::motion(
     Controls controls,
     double delta_time)
 {
-    if (robot_state.yaw < 0)
-        robot_state.yaw += 270 * M_PI / 180.0;
     robot_state.x += (controls.velocity * cos(robot_state.yaw)) * delta_time;
     robot_state.y += (controls.velocity * sin(robot_state.yaw)) * delta_time;
     robot_state.yaw += controls.yaw_rate * delta_time;
@@ -64,17 +64,6 @@ RobotState DynamicWindowPlanner::motion(
     return robot_state;
 }
 
-double DynamicWindowPlanner::pi_2_pi(double yaw)
-{
-    double angle = yaw / M_PI * 180;
-    while (angle > M_PI)
-        angle = angle - 2.0 * M_PI;
-
-    while (angle < -M_PI)
-        angle = angle + 2.0 * M_PI;
-
-    return angle * M_PI / 180;
-}
 
 //  Calculates the dynamic window using the robot footprint
 //  and current motion states.
@@ -151,12 +140,16 @@ std::vector<RobotState> DynamicWindowPlanner::calculate_final_input(
         Controls controls,
         DynamicWindow dynamic_window,
         Point goal,
-        const std::vector<Point>& obstacles)
+        const std::vector<Point>& obstacles,
+        std::vector<std::vector<RobotState>>& all_trajectories)
 {
     double min_cost = std::numeric_limits<double>::max();
+    double best_goal, best_speed;
+    double goal_distance, angle_to_goal;
     std::vector<RobotState> best_trajectory;
     double obstacle_cost = 1.0;
 
+    all_trajectories.clear();
 
     #pragma omp parallel for
     for (double v = dynamic_window.y_min; 
@@ -171,13 +164,19 @@ std::vector<RobotState> DynamicWindowPlanner::calculate_final_input(
             std::vector<RobotState> trajectory = calculate_trajectory(robot_state, 
                                                                         v, 
                                                                         y);
-            double to_goal_cost = calculate_to_goal_cost(trajectory, goal, robot_state);
+            double to_goal_cost = to_goal_cost_gain * calculate_to_goal_cost(trajectory, 
+                                                                            goal, 
+                                                                            robot_state,
+                                                                            goal_distance,
+                                                                            angle_to_goal);
 
             double speed_cost = speed_cost_gain * (max_speed - trajectory[-1].velocity);
 
-            obstacle_cost = calculate_obstacle_cost(trajectory, obstacles);
+            obstacle_cost = obstacle_cost_gain * calculate_obstacle_cost(trajectory, obstacles);
 
             double final_cost = to_goal_cost + speed_cost + obstacle_cost;
+
+            all_trajectories.push_back(trajectory);
 
             // search for minimum trajectory
             if (min_cost >= final_cost)
@@ -185,18 +184,19 @@ std::vector<RobotState> DynamicWindowPlanner::calculate_final_input(
                 min_cost = final_cost;
                 best_controls_.velocity = v;
                 best_controls_.yaw_rate = y;
+                best_goal = to_goal_cost;
+                best_speed = speed_cost;
                 best_trajectory = trajectory;
             }
         }
     }
 
-    // if (robot_state.yaw < 0)
-    // {
-    //     for (int i = 0; i < best_trajectory.size(); i++)
-    //     {
-    //         best_trajectory[i].y *= -1;
-    //     }
-    // }
+    // std::cout << "********************************************" << std::endl;
+    // std::cout << "Best To Goal:  " << best_goal << std::endl;
+    // std::cout << "Best Speed: " << best_speed << std::endl;
+    // std::cout << "Goal Distance: " << goal_distance << std::endl;
+    // std::cout << "Angle to goal: " << angle_to_goal << std::endl;
+    // std::cout << "********************************************" << std::endl;
 
     return best_trajectory;
 }
@@ -213,10 +213,11 @@ double DynamicWindowPlanner::calculate_obstacle_cost(
         const std::vector<Point>& obstacles)
 {
     int skip = 2;
-    double min_distance = 1e33;
+    double min_distance = std::numeric_limits<double>::max();
 
     if (obstacles.size() > 0)
     {
+        #pragma omp parallel for
         for (int i = 0; i < trajectory.size(); i+=skip)
         {
             for (int j = 0; j < obstacles.size(); j++)
@@ -254,12 +255,18 @@ double DynamicWindowPlanner::calculate_obstacle_cost(
 double DynamicWindowPlanner::calculate_to_goal_cost(
         std::vector<RobotState> trajectory,
         Point goal,
-        RobotState curr_state)
+        RobotState curr_state,
+        double& goal_distance,
+        double& angle_to_goal)
 {
     double dx = goal.x - trajectory.back().x;
     double dy = goal.y - trajectory.back().y;
-    double goal_distance = sqrt(pow(dx, 2) + pow(dy, 2));
-    double cost = to_goal_cost_gain * goal_distance;
+    goal_distance = sqrt(pow(dx, 2) + pow(dy, 2));
+
+    angle_to_goal = atan2(goal.y - trajectory.back().y, 
+                                 goal.x - trajectory.back().x);
+
+    double cost = angle_to_goal + goal_distance;
 
     return cost;
 }
@@ -275,7 +282,8 @@ std::vector<RobotState> DynamicWindowPlanner::plan(
         RobotState robot_state,
         Controls controls,
         Point goal,
-        std::vector<Point> obstacles)
+        std::vector<Point> obstacles,
+        std::vector<std::vector<RobotState>>& all_trajectories)
 {
     DynamicWindow dynamic_window = calculate_dynamic_window(robot_state);
 
@@ -284,7 +292,8 @@ std::vector<RobotState> DynamicWindowPlanner::plan(
         controls,
         dynamic_window,
         goal,
-        obstacles);
+        obstacles,
+        all_trajectories);
 
     return trajectory;
 }

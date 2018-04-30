@@ -61,7 +61,6 @@ class PathTrackingNode(object):
         self.state.x = self.x 
         self.state.y = self.y 
         self.state.yaw = self.yaw
-        print ("Current yaw: ", self.yaw % (2 * np.pi))
 
     def update_velocity(self, velocity):
         v = velocity.data

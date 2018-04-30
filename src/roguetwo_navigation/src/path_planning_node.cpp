@@ -14,7 +14,7 @@ PathPlanningNode::PathPlanningNode()
 void PathPlanningNode::start_autonomous(std_msgs::Bool start)
 {
 	goal.x = 0;
-	goal.y = 2;
+	goal.y = 0;
 	std::cout << "Starting autonmous mode." << std::endl;
 	timer = nh.createTimer(
 			ros::Duration(0.1), 
@@ -80,12 +80,14 @@ void PathPlanningNode::update_obstacles(const nav_msgs::OccupancyGrid occupancy_
 // @param event: timer event
 void PathPlanningNode::generate_dynamic_window_path(const ros::TimerEvent& event)
 {
+	std::vector<std::vector<RobotState>> all_trajectories;
 
 	trajectory = dynamic_window_planner.plan(
 		robot_state, 
 		controls, 
 		goal, 
-		obstacles);
+		obstacles,
+		all_trajectories);
 
 	robot_state = dynamic_window_planner.motion(robot_state, dynamic_window_planner.best_controls_, delta_time);
 
@@ -100,7 +102,7 @@ void PathPlanningNode::generate_dynamic_window_path(const ros::TimerEvent& event
 
 	roguetwo_navigation::Path path_msg;
 
-	if (distance_from_goal < 0.5)
+	if (distance_from_goal < 2.0)
 	{
 		std::cout << "Finished!" << std::endl;
 		path_msg.x_states.push_back(-100);
@@ -119,6 +121,21 @@ void PathPlanningNode::generate_dynamic_window_path(const ros::TimerEvent& event
 		}
 	}
 
+	roguetwo_navigation::Paths paths_msg;
+	for (auto traj : all_trajectories)
+	{
+		roguetwo_navigation::Path path_msg;
+		for (int i = 0; i < traj.size(); i++)
+		{
+			RobotState state = traj[i];
+			path_msg.x_states.push_back(state.x);
+			path_msg.y_states.push_back(state.y);
+			path_msg.yaw_states.push_back(state.yaw);
+		}
+		paths_msg.paths.push_back(path_msg);
+	}
+
+	paths_pub.publish(paths_msg);
 	local_path_pub.publish(path_msg);
 }
 
@@ -141,6 +158,7 @@ int main(int argc, char** argv)
     double predict_time;
     double to_goal_cost_gain;
     double speed_cost_gain;
+	double obstacle_cost_gain;
     double robot_radius;
 
 	path_planning_node.nh.getParam("max_speed", max_speed);
@@ -154,10 +172,9 @@ int main(int argc, char** argv)
 	path_planning_node.nh.getParam("predict_time", predict_time);
 	path_planning_node.nh.getParam("to_goal_cost_gain", to_goal_cost_gain);
 	path_planning_node.nh.getParam("speed_cost_gain", speed_cost_gain);
+	path_planning_node.nh.getParam("obstacle_cost_gain", obstacle_cost_gain);
 	path_planning_node.nh.getParam("robot_radius", robot_radius);
 
-	std::cout << "Max speed: " << max_speed << std::endl;
-	std::cout << "yaw_rate_reso: " << yaw_rate_resolution << std::endl;
 	
 	DynamicWindowPlanner dynamic_window_planner = DynamicWindowPlanner(max_speed,
 																	min_speed,
@@ -170,6 +187,7 @@ int main(int argc, char** argv)
 																	predict_time,
 																	to_goal_cost_gain,
 																	speed_cost_gain,
+																	obstacle_cost_gain,
 																	robot_radius);
 
 	path_planning_node.set_planner(dynamic_window_planner);
@@ -193,6 +211,8 @@ int main(int argc, char** argv)
 		&path_planning_node);
 
 	path_planning_node.local_path_pub = path_planning_node.nh.advertise<roguetwo_navigation::Path>("local_path", 1);
+	path_planning_node.paths_pub = path_planning_node.nh.advertise<roguetwo_navigation::Paths>("paths", 1);
+
 
 	// ros::Timer timer = path_planning_node.nh.createTimer(
 	// 	ros::Duration(0.1), 

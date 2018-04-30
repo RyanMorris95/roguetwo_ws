@@ -6,7 +6,7 @@ import time
 import numpy as np
 from roguetwo_perception.msg import SE2
 from nav_msgs.msg import Odometry, OccupancyGrid
-from roguetwo_navigation.msg import Path
+from roguetwo_navigation.msg import Path, Paths
 
 class PlotSE2(object):
     def __init__(self):
@@ -35,13 +35,16 @@ class PlotSE2(object):
         self.x_states = []
         self.y_states = []
 
+        self.paths = []
+
         self.obstacles = np.array(False)
 
         self.last_time = 0
 
         rospy.Subscriber("/encoder/odometry", Odometry, self.update_se2, queue_size=1)
-        rospy.Subscriber("/odometry/filtered", Odometry, self.update_se2_ekf, queue_size=1)
+        # rospy.Subscriber("/odometry/filtered", Odometry, self.update_se2_ekf, queue_size=1)
         rospy.Subscriber("/path_planning_node/local_path", Path, self.update_path, queue_size=1)
+        rospy.Subscriber("/path_planning_node/paths", Paths, self.update_paths, queue_size=10)
         rospy.Subscriber("/occupancy_grid", OccupancyGrid, self.update_grid, queue_size=1)
 
         rospy.Timer(rospy.Duration(0.1), self.plot)
@@ -65,6 +68,13 @@ class PlotSE2(object):
     def update_path(self, path):
         self.x_states = path.x_states
         self.y_states = path.y_states
+
+    def update_paths(self, paths_msg):
+        self.paths = []
+        for path in paths_msg.paths:
+            states = [path.x_states, path.y_states]
+            self.paths.append(states)
+
 
     def get_yaw(self, odometry):
         pose = odometry.pose 
@@ -90,21 +100,22 @@ class PlotSE2(object):
         self.yaw = self.get_yaw(odometry)
         self.speed = self.vel_x * math.cos(self.yaw)
 
-    def update_se2_ekf(self, odometry):
-        self.se2_x_ekf.append(odometry.pose.pose.position.x)
-        self.se2_y_ekf.append(odometry.pose.pose.position.y)
+    # def update_se2_ekf(self, odometry):
+    #     self.se2_x_ekf.append(odometry.pose.pose.position.x)
+    #     self.se2_y_ekf.append(odometry.pose.pose.position.y)
 
-        self.yaw2 = self.get_yaw(odometry)
-        self.vel_x2 = odometry.twist.twist.linear.x 
-        self.vel_y2 = odometry.twist.twist.linear.y
-        self.speed2 = self.vel_x2 * math.cos(self.yaw2)
+    #     self.yaw2 = self.get_yaw(odometry)
+    #     self.vel_x2 = odometry.twist.twist.linear.x 
+    #     self.vel_y2 = odometry.twist.twist.linear.y
+    #     self.speed2 = self.vel_x2 * math.cos(self.yaw2)
 
     def plot(self, event):
         plt.clf()
+
         try:
-            plt.scatter(self.se2_x, self.se2_y, c='red', label='No Filter', s=4)
-            plt.scatter(self.se2_x_ekf, self.se2_y_ekf, c='green', label='EKF', s=2)
-            plt.scatter(self.x_states, self.y_states, c='blue', label='Path', s=1, alpha=0.3)
+            plt.scatter(self.se2_x, self.se2_y, c='green', label='No Filter', s=3)
+            plt.scatter(self.x_states, self.y_states, c='blue', label='Path', s=2, alpha=0.4)
+
             if self.obstacles.all() and self.obstacles.shape[0] > 0:
                 plt.scatter(self.obstacles[:, 0], self.obstacles[:, 1])
             plt.arrow(self.se2_x[-1], self.se2_y[-1],
@@ -113,12 +124,16 @@ class PlotSE2(object):
                         head_width=0.1,
                         head_length=0.05,
                         fc='k', ec='k')
-            plt.arrow(self.se2_x_ekf[-1], self.se2_y_ekf[-1],
-                        0.5 * math.cos(self.yaw2),
-                        0.5 * math.sin(self.yaw2),
-                        head_width=0.1,
-                        head_length=0.05,
-                        fc='k', ec='k')
+            # plt.arrow(self.se2_x[-1], self.se2_y[-1],
+            #             0.5 * math.cos(self.yaw),
+            #             0.5 * math.sin(self.yaw),
+            #             head_width=0.1,
+            #             head_length=0.05,
+            #             fc='k', ec='k')
+
+            for i, path in enumerate(self.paths[0:-1:2]):
+                plt.scatter(path[0][0:-1:2], path[1][0:-1:2], c='red', s=1, alpha=0.3)
+            
             vel_str = "Vx: " + str(round(self.vel_x, 2)) + "  Vy: " + str(round(self.vel_y, 2)) + "  Vx2: " + str(round(self.vel_x2, 2)) + "  Vy2: " + str(round(self.vel_y2, 2))
             speed_str = "Yaw: " + str(round(self.yaw)) + "  Speed: " + str(round(self.speed, 2)) + "  Speed2: " + str(round(self.speed2, 2))
             #plt.title(vel_str)
@@ -138,9 +153,9 @@ class PlotSE2(object):
             plt.ylim(min(self.se2_y)-3, max(self.se2_y)+3)
 
             self.fig.canvas.draw()
+
         except:
             pass
-
 
 if __name__ == '__main__':
     rospy.init_node("plot_path")

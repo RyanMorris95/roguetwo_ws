@@ -4,6 +4,7 @@
 #include <std_msgs/Bool.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <roguetwo_navigation/Path.h>
+#include <roguetwo_navigation/Paths.h>
 #include <roguetwo_perception/SE2.h>
 #include <nav_msgs/Odometry.h>
 #include <math.h>
@@ -26,7 +27,7 @@ public:
 	ros::Subscriber update_se2_sub;
 	ros::Subscriber update_obstacles_sub;
 	ros::Subscriber start_autonomous_sub;
-
+	ros::Publisher paths_pub;
 	ros::Publisher local_path_pub;
 
 private:
