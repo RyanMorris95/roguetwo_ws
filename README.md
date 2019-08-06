@@ -2,6 +2,8 @@
 
 SDSU Spring 2018 Senior Design Project
 
+![alt text](./docs/rover.png)
+
 ## To Build
 
 - git clone https://github.com/RyanMorris95/roguetwo_ws.git
@@ -44,12 +46,29 @@ The general layout of the software can be seen below, consisting of a navigation
 ![alt text](./docs/high_level_design.png)
 ![alt text](./docs/nodes.png)
 
-## Mapping And Path Planning
+## Mapping And Path Planning (roguetwo_navigation)
 
-## Path Following
+To achieve autonomous obstacle avoidance on the way back to home the rover would have to map its environment and dynamically plan a route around obstacles while still heading in the direction of home. The mapping was acomplished using four single beam lidars on each corner of the vehicle. As the vehicle is driving, anytime a lidar beam reads an obstacle less than X feet away, that obstacle is added to a 2D occupancy grid. Then to dynamically plan a route around that obstacle we use the dynamic window approach. This planning method creates a window of possible trajectories around the vehicle. Every possible trajectory within that window is given a cost. The trajectory with the lowest cost is then used. The screenshot below shows the finished product during one of our runs. As one can see, the vehicle chooses a clear and fast route to home.
 
-## Docs and videos
+![alt text](./docs/path_planning.png)
 
-[Final report](./docs/final_report.pdf)
+## Path Following (roguetwo_control)
 
-[Video of successful run](./docs/trimmed_Video.mov)
+The planner will return a vector of x, y, and yaw states of the vehicle. It is now the path following node's job to take the vehicle's current position and compute a steering angle to follow that trajectory. The path tracking node uses the Stanley Method, which is a nonlinear feedback function of the cross track error measured from the center of the front axle to the neast path point. Equation 4 shows the steering control law equation.
+
+![alt text](./docs/path_tracking_equation.png)
+
+The first part of the euqation simple keeps the wheels aligned with the given path by setting the steering angle to the heading error. The second part adjusts the steering angle so that the intended trajectory intersects the path. As the cross track error increases the wheels will be steered more aggressively to the path. For visual representation please see figure 8 below.
+
+![alt text](./docs/path_tracking.png)
+
+## Simulation (roguetwo_gazebo)
+
+A crucial aspect of our testing and development is the Gazebo Simulation software. The most beneficial aspect of this software, is the opportunity for the coders to test their program and logic without requiring an actual field test. This is very impactful during the initial stages of development, when we have no actual hardware to test with, allowing the software and hardware teams to work in parallel.
+Within Gazebo itself, we are able to simulate the rover, sensors, cameras, and the boxes as can be seen in figure 10. The white boxes surrounding the rover represent the lidar, and the blue lines protruding outwards are the range. Gazebo also allows us to easily reposition the rover, and the boxes, allowing us to test quickly and efficiently, multiple times.
+
+![alt text](./docs/simulation.png)
+
+[To read more about our project please check out our final report](./docs/final_report.pdf)
+
+[To see a demo checkout this video of the vehicle autonomously returning home](./docs/trimmed_Video.mov)
