@@ -3,24 +3,44 @@
 //
 #include "dynamic_window_planner.h"
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
 
 DynamicWindowPlanner::DynamicWindowPlanner()
 {
-    max_speed = 0.70;
-    min_speed = -0.50;
-    max_yaw_rate = 45 * M_PI / 180.0;
-    max_acceleration = 0.4;
-    max_yaw_acceleration = 45 * M_PI / 180.0;
-    velocity_resolution = 0.05;
-    yaw_rate_resolution = 0.5 * M_PI / 180.0;
-    delta_time = 0.1;
-    predict_time = 7.0;
-    to_goal_cost_gain = 1.25;
-    speed_cost_gain = 1.0;
-    robot_radius = 0.31;
+
+}
+
+DynamicWindowPlanner::DynamicWindowPlanner(
+    double _max_speed,
+    double _min_speed,
+    double _max_yaw_rate,
+    double _max_acceleration,
+    double _max_yaw_acceleration,
+    double _velocity_resolution,
+    double _yaw_rate_resolution,
+    double _delta_time,
+    double _predict_time,
+    double _to_goal_cost_gain,
+    double _speed_cost_gain,
+    double _obstacle_cost_gain,
+    double _robot_radius
+)
+  : max_speed(_max_speed),
+    min_speed(_min_speed),
+    max_yaw_rate(_max_yaw_rate),
+    max_acceleration(_max_acceleration),
+    max_yaw_acceleration(_max_yaw_acceleration),
+    velocity_resolution(_velocity_resolution),
+    yaw_rate_resolution(_yaw_rate_resolution),
+    delta_time(_delta_time),
+    predict_time(_predict_time),
+    to_goal_cost_gain(_to_goal_cost_gain),
+    speed_cost_gain(_speed_cost_gain),
+    obstacle_cost_gain(_obstacle_cost_gain),
+    robot_radius(_robot_radius)
+{
+    max_yaw_rate = max_yaw_rate * M_PI / 180.0;
+    max_yaw_acceleration = max_yaw_acceleration * M_PI / 180.0;
+    yaw_rate_resolution = yaw_rate_resolution * M_PI / 180.0;
 }
 
 // Finds the next state of the robot based on the control inputs.
@@ -35,14 +55,15 @@ RobotState DynamicWindowPlanner::motion(
     Controls controls,
     double delta_time)
 {
-    robot_state.x += controls.velocity * cos(robot_state.yaw) * delta_time;
-    robot_state.y += controls.velocity * sin(robot_state.yaw) * delta_time;
+    robot_state.x += (controls.velocity * cos(robot_state.yaw)) * delta_time;
+    robot_state.y += (controls.velocity * sin(robot_state.yaw)) * delta_time;
     robot_state.yaw += controls.yaw_rate * delta_time;
     robot_state.velocity = controls.velocity;
     robot_state.yaw_rate = controls.yaw_rate;
 
     return robot_state;
 }
+
 
 //  Calculates the dynamic window using the robot footprint
 //  and current motion states.
@@ -105,22 +126,37 @@ std::vector<RobotState> DynamicWindowPlanner::calculate_trajectory(
     return trajectory;
 }
 
+// Calculates the best trajectory by finding the trajectory 
+// with the lowest cost.
+// 
+// @param robot_state: current state of robot
+// @param controls: current controls of the robot
+// @param dynamic_window: the window of yaws and velocities considered
+// @param goal: x, y goal 
+// @param obstacles: vector of points representing obstacles
+// @return best_trajectory: vector of robot states to follow
 std::vector<RobotState> DynamicWindowPlanner::calculate_final_input(
         RobotState robot_state,
         Controls controls,
         DynamicWindow dynamic_window,
         Point goal,
-        const std::vector<Point>& obstacles)
+        const std::vector<Point>& obstacles,
+        std::vector<std::vector<RobotState>>& all_trajectories)
 {
-    double min_cost = 10000.0;
+    double min_cost = std::numeric_limits<double>::max();
+    double best_goal, best_speed;
+    double goal_distance, angle_to_goal;
     std::vector<RobotState> best_trajectory;
     double obstacle_cost = 1.0;
 
+    all_trajectories.clear();
 
+    #pragma omp parallel for
     for (double v = dynamic_window.y_min; 
         v <= dynamic_window.y_max; 
         v += velocity_resolution)
     {
+        #pragma omp parallel for
         for (double y = dynamic_window.yaw_rate_min; 
             y <= dynamic_window.yaw_rate_max;
             y += yaw_rate_resolution)
@@ -128,13 +164,19 @@ std::vector<RobotState> DynamicWindowPlanner::calculate_final_input(
             std::vector<RobotState> trajectory = calculate_trajectory(robot_state, 
                                                                         v, 
                                                                         y);
-            double to_goal_cost = calculate_to_goal_cost(trajectory, goal);
+            double to_goal_cost = to_goal_cost_gain * calculate_to_goal_cost(trajectory, 
+                                                                            goal, 
+                                                                            robot_state,
+                                                                            goal_distance,
+                                                                            angle_to_goal);
 
             double speed_cost = speed_cost_gain * (max_speed - trajectory[-1].velocity);
 
-            obstacle_cost = calculate_obstacle_cost(trajectory, obstacles);
+            obstacle_cost = obstacle_cost_gain * calculate_obstacle_cost(trajectory, obstacles);
 
             double final_cost = to_goal_cost + speed_cost + obstacle_cost;
+
+            all_trajectories.push_back(trajectory);
 
             // search for minimum trajectory
             if (min_cost >= final_cost)
@@ -142,23 +184,40 @@ std::vector<RobotState> DynamicWindowPlanner::calculate_final_input(
                 min_cost = final_cost;
                 best_controls_.velocity = v;
                 best_controls_.yaw_rate = y;
+                best_goal = to_goal_cost;
+                best_speed = speed_cost;
                 best_trajectory = trajectory;
             }
         }
     }
 
+    // std::cout << "********************************************" << std::endl;
+    // std::cout << "Best To Goal:  " << best_goal << std::endl;
+    // std::cout << "Best Speed: " << best_speed << std::endl;
+    // std::cout << "Goal Distance: " << goal_distance << std::endl;
+    // std::cout << "Angle to goal: " << angle_to_goal << std::endl;
+    // std::cout << "********************************************" << std::endl;
+
     return best_trajectory;
 }
 
+// Loop through all the obstacles and make sure that 
+// the current trajectory isn't within the robot raidus
+// of an obstacle.
+//
+// @param trajectory: vector of robot states 
+// @param obstacles: vector of points representing obstacles
+// @return : cost of input trajectory
 double DynamicWindowPlanner::calculate_obstacle_cost(
         std::vector<RobotState> trajectory,
         const std::vector<Point>& obstacles)
 {
     int skip = 2;
-    double min_distance = 1e33;
+    double min_distance = std::numeric_limits<double>::max();
 
-    if (obstacles.size() > 1)
+    if (obstacles.size() > 0)
     {
+        #pragma omp parallel for
         for (int i = 0; i < trajectory.size(); i+=skip)
         {
             for (int j = 0; j < obstacles.size(); j++)
@@ -185,31 +244,46 @@ double DynamicWindowPlanner::calculate_obstacle_cost(
 
 }
 
+// Find the cost of the trajectory to the goal by
+// scaling the eculidan distance to the goal point 
+// by the gain.
+//
+// @param trajectory: vector of robot states
+// @param goal: x, y point 
+// @param curr_state: current state of the robot
+// @return cost: scaled euclidean distance representing the cost
 double DynamicWindowPlanner::calculate_to_goal_cost(
         std::vector<RobotState> trajectory,
-        Point goal)
+        Point goal,
+        RobotState curr_state,
+        double& goal_distance,
+        double& angle_to_goal)
 {
-    // RobotState robot_state = trajectory.back();
-    // std::cout << "Robot State " << " : "
-    //         << robot_state.x << "\t" << robot_state.y << "\t"
-    //         << robot_state.yaw << "\t" << robot_state.velocity 
-    //         << "\t" << robot_state.yaw_rate << std::endl;
-    //std::cout << trajectory.back().x << "\t" << trajectory.back().y << std::endl;
     double dx = goal.x - trajectory.back().x;
     double dy = goal.y - trajectory.back().y;
-    //std::cout << "Dx: " << dx << " Dy: " << dy << std::endl;
-    double goal_distance = sqrt(pow(dx, 2) + pow(dy, 2));
-    //std::cout << "Goal distance: " << goal_distance << std::endl;
-    double cost = to_goal_cost_gain * goal_distance;
+    goal_distance = sqrt(pow(dx, 2) + pow(dy, 2));
+
+    angle_to_goal = atan2(goal.y - trajectory.back().y, 
+                                 goal.x - trajectory.back().x);
+
+    double cost = angle_to_goal + goal_distance;
 
     return cost;
 }
 
+// Top level function to run dynamic window path planner
+//
+// @param robot_state: current state of robot
+// @param controls: current controls of robot
+// @param goal: x, y goal point
+// @param obstacles: vector points representing obstacles
+// @return trajectory: lowest cost vector of robot states to follow
 std::vector<RobotState> DynamicWindowPlanner::plan(
         RobotState robot_state,
         Controls controls,
         Point goal,
-        std::vector<Point> obstacles)
+        std::vector<Point> obstacles,
+        std::vector<std::vector<RobotState>>& all_trajectories)
 {
     DynamicWindow dynamic_window = calculate_dynamic_window(robot_state);
 
@@ -218,7 +292,8 @@ std::vector<RobotState> DynamicWindowPlanner::plan(
         controls,
         dynamic_window,
         goal,
-        obstacles);
+        obstacles,
+        all_trajectories);
 
     return trajectory;
 }

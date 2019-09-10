@@ -8,6 +8,7 @@
 #include "ackermann_msgs/AckermannDrive.h"
 #include "tf2_msgs/TFMessage.h"
 #include "sensor_msgs/Range.h"
+#include <nav_msgs/Odometry.h>
 #include <tf/transform_datatypes.h>
 
 bool initial = true;
@@ -22,6 +23,7 @@ bool boxpass = false;
 bool face = false;
 bool goal;
 bool finish = false;
+bool offcenter = false;
 //bool initialRotation = true;
 
 double X, Y, deltaY, deltaX;
@@ -41,39 +43,53 @@ int i = 0;
 std::string robot = "base_link";
 std::string test;
 
-void coords(const tf2_msgs::TFMessage::ConstPtr& msg){
+// void coords(const tf2_msgs::TFMessage::ConstPtr& msg){
 
-	test = msg->transforms[0].header.frame_id;
+// 	test = msg->transforms[0].header.frame_id;
 
-	if (test.compare(robot) == 0){
+// 	if (test.compare(robot) == 0){
 
-		X = msg->transforms[0].transform.translation.x;
-		Y = msg->transforms[0].transform.translation.y;
+// 		X = msg->transforms[0].transform.translation.x;
+// 		Y = msg->transforms[0].transform.translation.y;
 
-		//qX = msg->transforms[0].transform.rotation.x;
-		//qY = msg->transforms[0].transform.rotation.y;
-		//qZ = msg->transforms[0].transform.rotation.z;
-		//qW = msg->transforms[0].transform.rotation.w;
+// 		//qX = msg->transforms[0].transform.rotation.x;
+// 		//qY = msg->transforms[0].transform.rotation.y;
+// 		//qZ = msg->transforms[0].transform.rotation.z;
+// 		//qW = msg->transforms[0].transform.rotation.w;
 
-		//angle = atan2(destY - Y, destX - X);
+// 		//angle = atan2(destY - Y, destX - X);
 
-		Yaw = tf::getYaw(msg->transforms[0].transform.rotation);
-		//printf("Yaw: %f\n", Yaw);
+// 		Yaw = tf::getYaw(msg->transforms[0].transform.rotation);
+// 		//printf("Yaw: %f\n", Yaw);
 
-		//angle = roundf(10 * angle) / 10;
-		Yaw = roundf(100 * Yaw) / 100;
-		//printf("Yaw: %f\n", Yaw);
-		//printf("angle: %f\n", angle);
+// 		//angle = roundf(10 * angle) / 10;
+// 		Yaw = roundf(100 * Yaw) / 100;
+// 		//printf("Yaw: %f\n", Yaw);
+// 		//printf("angle: %f\n", angle);
 
-		X = roundf(10 * X) / 10;
-		Y = roundf(10 * Y) / 10;
+// 		X = roundf(10 * X) / 10;
+// 		Y = roundf(10 * Y) / 10;
 
-		//face = Yaw == angle;
+// 		//face = Yaw == angle;
 
-		if (destX == X && destY == Y) home = true;
+// 		if (destX == X && destY == Y) home = true;
 
-		//printf("GOTO: %f, CURRENT: %f\n", angle, Yaw);
-	}
+// 		//printf("GOTO: %f, CURRENT: %f\n", angle, Yaw);
+// 	}
+// }
+
+void coords(const nav_msgs::Odometry::ConstPtr& msg) {
+	X = msg->pose.pose.position.x;
+	Y = msg->pose.pose.position.y;
+
+	tf::Quaternion q(
+		msg->pose.pose.orientation.x,
+		msg->pose.pose.orientation.y,
+		msg->pose.pose.orientation.z,
+		msg->pose.pose.orientation.w);
+	tf::Matrix3x3 m(q);
+	double roll, pitch;
+	m.getRPY(roll, pitch, Yaw);
 }
 
 void sens4(const sensor_msgs::Range::ConstPtr& msg){
@@ -111,17 +127,17 @@ int main(int argc, char** argv){
 
 	//double destX = 0.0;
 	//double destY = 0.0;
-
-	ros::init(argc, argv, "bruteforce");	
+	
+	ros::init(argc, argv, "bruteforce");
 
 	ros::NodeHandle nh;
 
-	ros::Subscriber place = nh.subscribe("tf", 10, coords);
-	ros::Subscriber sensor4 = nh.subscribe("sonar_frontR_distance", 10, sens4);
-	ros::Subscriber sensor0 = nh.subscribe("sonar_frontL_distance", 10, sens0);
-	ros::Subscriber sensor1 = nh.subscribe("sonar_right_distance", 10, sens1);
-	ros::Subscriber sensor2 = nh.subscribe("sonar_back_distance", 10, sens2);
-	ros::Subscriber sensor3 = nh.subscribe("sonar_left_distance", 10, sens3); 
+	ros::Subscriber place = nh.subscribe("/encoder/odometry", 10, coords);
+	ros::Subscriber sensor4 = nh.subscribe("lidar_front_right_filtered", 10, sens4);
+	ros::Subscriber sensor0 = nh.subscribe("lidar_front_left_filtered", 10, sens0);
+	ros::Subscriber sensor1 = nh.subscribe("lidar_right_filtered", 10, sens1);
+	//ros::Subscriber sensor2 = nh.subscribe("sonar_back_distance", 10, sens2);
+	ros::Subscriber sensor3 = nh.subscribe("lidar_left_filtered", 10, sens3);
 	ros::spinOnce();
 	//ros::spin();
 
@@ -130,7 +146,7 @@ int main(int argc, char** argv){
 
 	sleep(1);			//asefkjlha srklgdlrgjklearg i hate my life
 
-	//ros::Rate rate(10);
+	ros::Rate rate(10);
 
 	while(ros::ok()){
 
@@ -138,33 +154,27 @@ int main(int argc, char** argv){
 
 		if (initial){				//fix this, needs to relate to destination, not 0
 
-			if (X >= destX && Y >= destY) angle = Y >= X ? -M_PI/2 : M_PI;
-
-			else if (X <= destX && Y >= destY) angle = Y >= fabs(X) ? -M_PI/2 : 0;
-
-			else if (X <= destX && Y <= destY) angle = Y <= X ? M_PI/2 : 0;
-
-			else if (X >= destX && Y <= destY) angle = fabs(Y) >= X ? M_PI/2 : M_PI;
+			angle = atan2(destY - Y, destX - X);
 
 			angle = roundf(100 * angle) / 100;
 
-			goal = angle == 3.14 || angle == 0;	//1 = Face Horizontal, 0 = Face vertical
+			//goal = angle == 3.14 || angle == 0;	//1 = Face Horizontal, 0 = Face vertical
 			
 			msg.steering_angle = 0.0;
 
-			if (goal) msg.steering_angle = X <= destX ? -0.30 : 0.30;
+			//if (goal) msg.steering_angle = X <= destX ? -0.30 : 0.30;
 
-			else if (!goal) msg.steering_angle = Y <= destY ? -0.30 : 0.30;
+			//else if (!goal) msg.steering_angle = Y <= destY ? -0.30 : 0.30;
 			
 
-			msg.speed = 1;
+			msg.speed = 0.50;
 			pub.publish(msg);
 			//sleep(1);
 			initial = false;
 		}
 
-		if (finish) angle = atan2(destY - Y, destX - X);
-
+		angle = atan2(destY - Y, destX - X);
+		angle = roundf(100 * angle) / 100;
 			
 		if (angle >=0 && Yaw >= 0) direction = Yaw - angle > 0;
 
@@ -179,20 +189,24 @@ int main(int argc, char** argv){
 		//printf("L: %f\n", frontL);
 		//printf("R: %f\n", frontR);
 
-		//printf("angle: %f\n", angle);
+		//printf("angle: %f      Yaw: %f\n", angle, Yaw);
 		//printf("Yaw: %f\n", Yaw);
 
 		//printf("L: %f\n", left);
 		//printf("R: %f\n", right);
 		//printf("B: %f\n", back);
 
-		printf("%d\n", goal);
+		//printf("%d\n", goal);
 
-		msg.speed = 1;
+		msg.speed = 0.50;
 		pub.publish(msg);
 
 		ros::spinOnce(); 
 	
+		//if ((Yaw <= 0 && angle <= 0) || (Yaw >= 0 && angle >=0)){
+
+			//face = fabs(Yaw) - fabs(angle) <= .08 || fabs(Yaw) - fabs(angle) >= 0.8;
+		//}
 
 		face = Yaw == angle;
 		//printf("face: %d\n", face);
@@ -205,7 +219,7 @@ int main(int argc, char** argv){
 			//msg.steering_angle = msg.steering_angle < 0 ? 0.07 : -0.07;
 
 		}
-
+/*
 		if (!finish && ((goal && (X - 1.5 == destX || X + 1.5 == destX)) || (!goal && (Y - 1.5 == destY || Y + 1.5 == destY)))){
 
 			angle = atan2(destY - Y, destX - X);
@@ -229,49 +243,60 @@ int main(int argc, char** argv){
 			msg.steering_angle = direction ? -0.30 : 0.30;
 			pub.publish(msg);
 			ros::spinOnce();
-		}
+		}*/
 		
 		//ros::spinOnce();
 		//face = Yaw == angle;
 
-		if (frontL >= 65 && frontR >= 65 && !face){
+		if (frontL >= 0.8 && frontR >= 0.8 && !face){
 
 			msg.steering_angle = direction ? -0.30 : 0.30;
-			msg.speed = 1;
+			msg.speed = 0.50;
 			pub.publish(msg);
 			ros::spinOnce();
 		}
 
-		if (frontL < 20 && frontR < 20) {
+		if (frontL < 0.4 && frontR < 0.4) {
 
-			msg.speed = -1.0;
+			msg.speed = -0.50;
 			msg.steering_angle = 0.0;
 			pub.publish(msg);
 			sleep(1);
 			ros::spinOnce();
 		}
 
-		if (frontL < 65 && frontR < 65) {
+		if (frontL < 0.8 && frontR < 0.8) {
 
 			boxfront = true;
 			box = true;
+			offcenter = false;
 			msg.steering_angle = direction ? -0.53 : 0.53;
+			msg.speed = 0.50;
+			pub.publish(msg);
 			ros::spinOnce();
+
+			printf("BOTH\n");
 		}
 
-		else if (frontL < 60 && frontR > 60){
+		else if (frontL < 0.6 && frontR > 0.6){
 
 			boxfront = true;
+			offcenter = true;
 			direction = 1;
-			msg.steering_angle = -0.40;
+			msg.steering_angle = -0.37;
+			pub.publish(msg);
+			printf("LEFT\n");
 			ros::spinOnce();
 		}
 
-		else if (frontR < 60 && frontL > 60){
+		else if (frontR < 0.6 && frontL > 0.6){
 
 			boxfront = true;
+			offcenter = true;
 			direction = 0;
-			msg.steering_angle = 0.40;
+			msg.steering_angle = 0.37;
+			pub.publish(msg);
+			printf("RIGHT\n");
 			ros::spinOnce();
 		}
 
@@ -281,7 +306,7 @@ int main(int argc, char** argv){
 		
 		while (boxfront && ros::ok()){
 
-			if (direction && left < 50 || !direction && right < 50) {
+			if (direction && left < 0.65 || !direction && right < 0.65 || i == 160000) {
 
 				boxfront = false;
 				boxside = true;
@@ -290,10 +315,12 @@ int main(int argc, char** argv){
 				msg.steering_angle = direction ? 0.45 : -0.45;
 	
 				pub.publish(msg);	
-				ros::spinOnce();			
+				ros::spinOnce();	
+				i = 0;
+				printf("LEAVE\n");		
 				break;
 			}
-
+			++i;
 			//printf("%d\n", direction);
 			pub.publish(msg);
 			ros::spinOnce();
@@ -301,21 +328,35 @@ int main(int argc, char** argv){
 			//rate.sleep();
 		}
 
+		i = 0;
+
 		while (boxside && ros::ok()){
 
-			if (direction && left > 50 || !direction && right > 50) {
+			if (direction && left > 0.65 || !direction && right > 0.65) {
 
 				boxpass = true;
 				boxside = false;
+				printf("LEAVE2\n");
 				break;
 			}
 
-			printf("side\n");
+			//printf("side\n");
 
 			//if (i == 5)
 			//msg.steering_angle = direction ? 0.45 : -0.45;
+			
+			if (i % 3 == 0 && !offcenter){
 
-			msg.speed = 1;
+				msg.steering_angle = msg.steering_angle < 0 ? msg.steering_angle + 0.07 : msg.steering_angle - 0.7;
+			}
+
+			else if (i % 4 == 0 && offcenter){
+
+				msg.steering_angle = msg.steering_angle < 0 ? msg.steering_angle + 0.1 : msg.steering_angle - 0.1;
+				offcenter = false;
+			}
+			
+			msg.speed = 0.50;
 	
 			pub.publish(msg);
 			ros::spinOnce();
@@ -323,6 +364,7 @@ int main(int argc, char** argv){
 
 			//rate.sleep();
 		}
+		i = 0;
 		/*
 		while (boxpass && ros::ok()){
 
@@ -337,7 +379,7 @@ int main(int argc, char** argv){
 			
 		//}
 	
-		while (X == destX && Y == destY && ros::ok()){
+		while (fabs(X) <= 0.5  && fabs(Y) <= 0.5 && ros::ok()){
 
 			msg.speed = 0;
 			pub.publish(msg);

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(roguetwo_perception)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -16,6 +16,7 @@ find_package(catkin REQUIRED
 	genmsg
 	pcl_ros
 	message_generation
+  nav_msgs
 )
 
 find_package(OpenCV 3 REQUIRED)
@@ -124,7 +125,6 @@ catkin_package(
 include_directories(
  include
  ${catkin_INCLUDE_DIRS}
- ${OpenCV_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -148,15 +148,15 @@ include_directories(
 ## e.g. "rosrun someones_pkg node" instead of "rosrun someones_pkg someones_pkg_node"
 # set_target_properties(${PROJECT_NAME}_node PROPERTIES OUTPUT_NAME node PREFIX "")
 
-add_executable(velocity_estimation_node src/velocity_estimation_node.cpp)
-add_dependencies(velocity_estimation_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_executable(build_lidar_map src/build_lidar_map.cpp)
+add_dependencies(build_lidar_map ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(velocity_estimation_node
+target_link_libraries(build_lidar_map
    ${catkin_LIBRARIES}
 )
 

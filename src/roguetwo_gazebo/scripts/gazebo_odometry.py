@@ -15,7 +15,7 @@ import tf2_ros
 
 class OdometryNode(object):
     # set publishers
-    pub_odom = rospy.Publisher('/odom', Odometry, queue_size=1)
+    pub_odom = rospy.Publisher('/encoder/odometry', Odometry, queue_size=1)
     #pub_se2 = rospy.Publisher('/se2_state', SE2, queue_size=1)
 
     def __init__(self):
@@ -68,18 +68,18 @@ class OdometryNode(object):
         )
         self.tf_pub.sendTransform(tf)
 
-        # orientation = self.last_received_pose.orientation
-        # quaternion_arr = np.array([orientation.x,
-        #                            orientation.y,
-        #                            orientation.z,
-        #                            orientation.w])
-        # euler = euler_from_quaternion(quaternion_arr)
+        orientation = self.last_received_pose.orientation
+        quaternion_arr = np.array([orientation.x,
+                                   orientation.y,
+                                   orientation.z,
+                                   orientation.w])
+        euler = euler_from_quaternion(quaternion_arr)
 
-        # se2_msg = SE2()
-        # se2_msg.x = self.last_received_pose.position.x
-        # se2_msg.y = self.last_received_pose.position.y
-        # se2_msg.yaw = euler[1]
-        #self.pub_se2.publish(se2_msg)
+        se2_msg = SE2()
+        se2_msg.x = self.last_received_pose.position.x
+        se2_msg.y = self.last_received_pose.position.y
+        se2_msg.yaw = euler[1]
+        print ("Curr Yaw: ", se2_msg.yaw)
 
 
 # start the node

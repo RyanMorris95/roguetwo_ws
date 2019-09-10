@@ -1,4 +1,6 @@
 <launch>
+    <node pkg="roguetwo_perception" name="filter_lidar" type="filter_lidar.py" output="screen" />
+    <node pkg="roguetwo_perception" name="build_lidar_map" type="build_lidar_map" respawn="true" output="screen" />
 </launch>
 
 

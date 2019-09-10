@@ -18,7 +18,7 @@ class JoyToAckermann(object):
         self.start_autonomous = False
         self.front_camera = True
         self.max_motor_vel = 0.5
-        self.max_steering_angle = math.radians(20)
+        self.max_steering_angle = math.radians(30)
         self.current_cmd_msg = None
 
         self.timer = rospy.Timer(rospy.Duration(0.1), self.publish_cmd)
@@ -90,9 +90,10 @@ class JoyToAckermann(object):
         msg.speed = motor_velocity
         msg.acceleration = 1
         msg.jerk = 1
-        msg.steering_angle = steering_angle
+        msg.steering_angle = -1*steering_angle
         msg.steering_angle_velocity = 1
         self.current_cmd_msg = msg
+        print (msg)
 
 if __name__ == "__main__":
     rospy.init_node('joy_to_ackermann')

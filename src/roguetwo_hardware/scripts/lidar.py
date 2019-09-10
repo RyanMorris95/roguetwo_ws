@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import serial
 import time
 import RPi.GPIO as GPIO
@@ -16,7 +17,7 @@ GPIO.setwarnings(False)
 GPIO.setup(LEDpin,GPIO.OUT)
 GPIO.output(LEDpin,GPIO.LOW)
 
-ser = serial.Serial('/dev/ttyAMA0',115200,timeout = 1)
+ser = serial.Serial('/dev/ttyUSB0',115200,timeout = 1)
 
 #ser.write(0x42)
 ser.write(bytes(b'B'))

@@ -1,3 +1,17 @@
+void coords(const nav_msgs::Odometry::ConstPtr& msg) {
+	X = msg->pose.pose.position.x;
+	Y = msg->pose.pose.position.y;
+
+	tf::Quaternion q(
+		msg->pose.pose.orientation.x,
+		msg->pose.pose.orientation.y,
+		msg->pose.pose.orientation.z,
+		msg->pose.pose.orientation.w);
+	tf::Matrix3x3 m(q);
+	double roll, pitch;
+	m.getRPY(roll, pitch, Yaw);
+}
+
 #include "ros/ros.h"
 #include <math.h>
 #include <signal.h>

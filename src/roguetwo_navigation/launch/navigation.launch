@@ -1,13 +1,20 @@
 <launch>
-    <node pkg="roguetwo_navigation" type="path_planning_node" name="path_planning_node" output="screen" />
-    <node pkg="roguetwo_navigation" type="sensor_fusion" name="sensor_fusion" output="screen" />
-    <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform" clear_params="true">
-        <rosparam command="load" file="$(find roguetwo_navigation)/params/navsat_transform.yaml" />
-        <remap from="imu/data" to="imu/data"/>
-        <remap from="gps/fix" to="gps"/>
+    <node pkg="roguetwo_navigation" type="path_planning_node" name="path_planning_node" output="screen" >
+        <param name="max_speed" type="double" value="0.5" />
+        <param name="min_speed" type="double" value="0.0" />
+        <param name="max_yaw_rate" type="double" value="90" />
+        <param name="max_acceleration" type="double" value="3.0" />
+        <param name="max_yaw_acceleration" type="double" value="90" />
+        <param name="velocity_resolution" type="double" value="0.1" />
+        <param name="yaw_rate_resolution" type="double" value="1.0" />
+        <param name="delta_time" type="double" value="0.1" />
+        <param name="predict_time" type="double" value="5.0" />
+        <param name="to_goal_cost_gain" type="double" value="0.1" />
+        <param name="speed_cost_gain" type="double" value="0.1" />
+        <param name="robot_radius" type="double" value="0.62" />
     </node>
 
-    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se" clear_params="true">
-        <rosparam command="load" file="$(find roguetwo_navigation)/params/ekf_transform.yaml" />
-    </node>
+    <node pkg="tf" type="static_transform_publisher" name="world_broadcast"
+            args="1 0 0 0 0 0 1 world odom 100" />
+
 </launch>

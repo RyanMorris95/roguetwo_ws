@@ -48,6 +48,20 @@ class DynamicWindowPlanner
 public:
     DynamicWindowPlanner();
 
+    DynamicWindowPlanner(double _max_speed,
+                         double _min_speed,
+                         double _max_yaw_rate,
+                         double _max_acceleration,
+                         double _max_yaw_acceleration,
+                         double _velocity_resolution,
+                         double _yaw_rate_resolution,
+                         double _delta_time,
+                         double _predict_time,
+                         double _to_goal_cost_gain,
+                         double _speed_cost_gain,
+                         double _obstacle_cost_gain,
+                         double _robot_radius);
+
     RobotState motion(RobotState robot_state,
                         Controls controls,
                         double delta_time);
@@ -61,18 +75,23 @@ public:
                                               Controls controls,
                                               DynamicWindow dynamic_window,
                                               Point goal,
-                                              const std::vector<Point>& obstacles);
+                                              const std::vector<Point>& obstacles,
+                                              std::vector<std::vector<RobotState>>& all_trajectories);
 
     double calculate_obstacle_cost(std::vector<RobotState> trajectory,
                                    const std::vector<Point>& obstacles);
 
     double calculate_to_goal_cost(std::vector<RobotState> trajectory,
-                                  Point goal);
+                                  Point goal,
+                                  RobotState curr_state,
+                                  double& goal_distance,
+                                  double& angle_to_goal);
 
     std::vector<RobotState> plan(RobotState robot_state,
                                 Controls controls,
                                 Point goal,
-                                std::vector<Point> obstacles);
+                                std::vector<Point> obstacles,
+                                std::vector<std::vector<RobotState>>& all_trajectories);
 
     void print_trajectory(std::vector<RobotState> trajectory);
 
@@ -91,6 +110,7 @@ private:
     double to_goal_cost_gain;
     double speed_cost_gain;
     double robot_radius;
+    double obstacle_cost_gain;
     
 };
 
